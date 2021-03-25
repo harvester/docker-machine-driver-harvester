@@ -16,11 +16,11 @@ func (v *VMBuilder) generateDiskName() string {
 }
 
 func (v *VMBuilder) Blank(diskSize, diskBus string) *VMBuilder {
-	return v.DataVolume(diskSize, diskBus)
+	return v.DataVolume(diskSize, diskBus, nil)
 }
 
-func (v *VMBuilder) Image(diskSize, diskBus, sourceHTTPURL string) *VMBuilder {
-	return v.DataVolume(diskSize, diskBus, sourceHTTPURL)
+func (v *VMBuilder) Image(diskSize, diskBus string, opt *DataVolumeOption) *VMBuilder {
+	return v.DataVolume(diskSize, diskBus, opt)
 }
 
 func (v *VMBuilder) SSHKey(sshKeyName string) *VMBuilder {
@@ -28,21 +28,33 @@ func (v *VMBuilder) SSHKey(sshKeyName string) *VMBuilder {
 	return v
 }
 
-func (v *VMBuilder) DataVolume(diskSize, diskBus string, sourceHTTPURL ...string) *VMBuilder {
+type DataVolumeOption struct {
+	HTTPURL          string
+	VolumeMode       corev1.PersistentVolumeMode
+	AccessMode       corev1.PersistentVolumeAccessMode
+	StorageClassName *string
+}
+
+func (v *VMBuilder) DataVolume(diskSize, diskBus string, opt *DataVolumeOption) *VMBuilder {
+	if opt == nil {
+		opt = &DataVolumeOption{
+			VolumeMode: corev1.PersistentVolumeBlock,
+			AccessMode: corev1.ReadWriteMany,
+		}
+	}
 	diskName := v.generateDiskName()
 	dataVolumeName := fmt.Sprintf("%s-%s-%s", v.vm.Name, diskName, rand.String(5))
 	v.dataVolumeNames = append(v.dataVolumeNames, dataVolumeName)
-	volumeMode := corev1.PersistentVolumeFilesystem
 	// DataVolumeTemplates
 	dataVolumeTemplates := v.vm.Spec.DataVolumeTemplates
 	dataVolumeSpecSource := cdiv1alpha1.DataVolumeSource{
 		Blank: &cdiv1alpha1.DataVolumeBlankImage{},
 	}
 
-	if len(sourceHTTPURL) > 0 && sourceHTTPURL[0] != "" {
+	if opt.HTTPURL != "" {
 		dataVolumeSpecSource = cdiv1alpha1.DataVolumeSource{
 			HTTP: &cdiv1alpha1.DataVolumeSourceHTTP{
-				URL: sourceHTTPURL[0],
+				URL: opt.HTTPURL,
 			},
 		}
 	}
@@ -56,14 +68,15 @@ func (v *VMBuilder) DataVolume(diskSize, diskBus string, sourceHTTPURL ...string
 			Source: dataVolumeSpecSource,
 			PVC: &corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{
-					corev1.ReadWriteOnce,
+					opt.AccessMode,
 				},
 				Resources: corev1.ResourceRequirements{
 					Requests: corev1.ResourceList{
 						corev1.ResourceStorage: resource.MustParse(diskSize),
 					},
 				},
-				VolumeMode: &volumeMode,
+				VolumeMode:       &opt.VolumeMode,
+				StorageClassName: opt.StorageClassName,
 			},
 		},
 	}
