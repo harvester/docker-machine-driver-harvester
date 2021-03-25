@@ -12,6 +12,8 @@ import (
 	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/ssh"
 	"github.com/rancher/machine/libmachine/state"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/utils/pointer"
 )
 
 const (
@@ -91,12 +93,35 @@ func (d *Driver) Create() error {
 	if err = d.createKeyPair(); err != nil {
 		return err
 	}
+
 	userData, networkData := d.createCloudInit()
+
+	var dataVolumeOption *builder.DataVolumeOption
+	serverVersion, err := c.Settings.Get("server-version")
+	if err != nil {
+		return err
+	}
+	supportLiveMigrate := serverVersion.Value != "0.1.0"
+	if supportLiveMigrate {
+		dataVolumeOption = &builder.DataVolumeOption{
+			VolumeMode:       corev1.PersistentVolumeBlock,
+			AccessMode:       corev1.ReadWriteMany,
+			StorageClassName: pointer.StringPtr("longhorn-" + d.ImageName),
+		}
+	} else {
+		dataVolumeOption = &builder.DataVolumeOption{
+			HTTPURL:    d.ImageDownloadURL,
+			VolumeMode: corev1.PersistentVolumeFilesystem,
+			AccessMode: corev1.ReadWriteOnce,
+		}
+	}
+
 	// create vm
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.Namespace).Name(d.MachineName).
 		CPU(d.CPU).Memory(d.MemorySize).
-		Image(d.DiskSize, d.DiskBus, d.ImageDownloadURL).
+		Image(d.DiskSize, d.DiskBus, dataVolumeOption).
+		EvictionStrategy(supportLiveMigrate).
 		CloudInit(userData, networkData)
 
 	if d.KeyPairName != "" {
@@ -108,8 +133,8 @@ func (d *Driver) Create() error {
 	} else {
 		vmBuilder = vmBuilder.ManagementNetwork(true)
 	}
-	_, err = c.VirtualMachines.Create(vmBuilder.Run())
-	if err != nil {
+
+	if _, err = c.VirtualMachines.Create(vmBuilder.Run()); err != nil {
 		return err
 	}
 
