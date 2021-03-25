@@ -100,6 +100,14 @@ func (v *VMBuilder) CPU(cores int) *VMBuilder {
 	return v
 }
 
+func (v *VMBuilder) EvictionStrategy(liveMigrate bool) *VMBuilder {
+	if liveMigrate {
+		evictionStrategy := kubevirtv1.EvictionStrategyLiveMigrate
+		v.vm.Spec.Template.Spec.EvictionStrategy = &evictionStrategy
+	}
+	return v
+}
+
 func (v *VMBuilder) Run() *clientv1.VirtualMachine {
 	v.vm.Spec.Running = pointer.BoolPtr(true)
 	return v.VM()
