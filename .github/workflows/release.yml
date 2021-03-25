@@ -1,0 +1,39 @@
+name: Main
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Build
+      run: |
+        make
+
+    - name: Get code info
+      id: info
+      run: |
+        source scripts/version
+        echo "::set-output name=artifacts_dir::${PWD}/dist/artifacts"
+        echo "::set-output name=base_version::${VERSION}"
+
+    - name: Generate release info
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        BASE_VERSION: ${{ steps.info.outputs.base_version }}
+      run: |
+        echo "🍻" > release.txt
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        prerelease: true
+        body_path: release.txt
+        files: ${{ steps.info.outputs.artifacts_dir }}/*
