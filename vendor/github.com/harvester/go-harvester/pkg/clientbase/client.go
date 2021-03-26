@@ -8,6 +8,8 @@ import (
 	"github.com/guonaihong/gout"
 	"github.com/guonaihong/gout/dataflow"
 	"sigs.k8s.io/yaml"
+
+	goharverrors "github.com/harvester/go-harvester/pkg/errors"
 )
 
 type APIClient struct {
@@ -45,14 +47,16 @@ func (r *APIClient) NewRequest() *dataflow.Gout {
 }
 
 func (r *APIClient) Create(object interface{}) (respCode int, respBody []byte, err error) {
-	err = r.NewRequest().
-		POST(r.BuildAPIURL()).
-		SetJSON(object).
-		SetHeader().
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			POST(r.BuildAPIURL()).
+			SetJSON(object).
+			SetHeader().
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
@@ -62,71 +66,83 @@ func (r *APIClient) CreateByYAML(object interface{}) (respCode int, respBody []b
 	if err != nil {
 		return
 	}
-	err = r.NewRequest().
-		POST(r.BuildAPIURL()).
-		SetBody(yamlData).
-		SetCookies().
-		SetHeader(gout.H{"content-type": "application/yaml"}).
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			POST(r.BuildAPIURL()).
+			SetBody(yamlData).
+			SetCookies().
+			SetHeader(gout.H{"content-type": "application/yaml"}).
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
 func (r *APIClient) List() (respCode int, respBody []byte, err error) {
-	err = r.NewRequest().
-		GET(r.BuildAPIURL()).
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			GET(r.BuildAPIURL()).
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
 func (r *APIClient) Get(resourceName string, obj ...interface{}) (respCode int, respBody []byte, err error) {
-	err = r.NewRequest().
-		GET(r.BuildResourceURL(resourceName)).
-		SetQuery(obj...).
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			GET(r.BuildResourceURL(resourceName)).
+			SetQuery(obj...).
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
 func (r *APIClient) Update(resourceName string, object interface{}) (respCode int, respBody []byte, err error) {
-	err = r.NewRequest().
-		PUT(r.BuildResourceURL(resourceName)).
-		SetJSON(object).
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			PUT(r.BuildResourceURL(resourceName)).
+			SetJSON(object).
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
 func (r *APIClient) Delete(resourceName string, obj ...interface{}) (respCode int, respBody []byte, err error) {
-	err = r.NewRequest().
-		DELETE(r.BuildResourceURL(resourceName)).
-		SetQuery(obj...).
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug).
-		Do()
+	err = goharverrors.RetryOnError(func() error {
+		return r.NewRequest().
+			DELETE(r.BuildResourceURL(resourceName)).
+			SetQuery(obj...).
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug).
+			Do()
+	})
 	return
 }
 
 func (r *APIClient) Action(resourceName string, action string, object interface{}) (respCode int, respBody []byte, err error) {
-	dataFlow := r.NewRequest().
-		POST(fmt.Sprintf("%s?action=%s", r.BuildResourceURL(resourceName), action)).
-		SetHeader().
-		BindBody(&respBody).
-		Code(&respCode).
-		Debug(r.Debug)
-	if object != nil {
-		dataFlow = dataFlow.SetJSON(object)
-	}
-	err = dataFlow.Do()
+	err = goharverrors.RetryOnError(func() error {
+		dataFlow := r.NewRequest().
+			POST(fmt.Sprintf("%s?action=%s", r.BuildResourceURL(resourceName), action)).
+			SetHeader().
+			BindBody(&respBody).
+			Code(&respCode).
+			Debug(r.Debug)
+		if object != nil {
+			dataFlow = dataFlow.SetJSON(object)
+		}
+		return dataFlow.Do()
+	})
 	return
 }
