@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rancher/wrangler/pkg/slice"
-
 	"github.com/rancher/wrangler/pkg/schemas/validation"
+	"github.com/rancher/wrangler/pkg/slice"
+)
+
+const (
+	defaultRetryNum      = 3
+	defaultRetryInterval = 1
 )
 
 type ResponseAPIError struct {
@@ -64,14 +68,14 @@ func IsConflict(err error) bool {
 	return CodeForError(err).Code == validation.Conflict.Code
 }
 
-func RetryOnCodes(retryNum, retryInterval int64, process func() error, codes ...string) error {
+func Retry(retryNum, retryInterval int64, process func() error, needRetry func(error) bool) error {
 	for {
 		if err := process(); err != nil {
 			if retryNum == 0 {
 				return err
 			}
 
-			if !slice.ContainsString(codes, CodeForError(err).Code) {
+			if !needRetry(err) {
 				return err
 			}
 			retryNum--
@@ -82,4 +86,16 @@ func RetryOnCodes(retryNum, retryInterval int64, process func() error, codes ...
 		}
 		return nil
 	}
+}
+
+func RetryOnCodes(retryNum, retryInterval int64, process func() error, codes ...string) error {
+	return Retry(retryNum, retryInterval, process, func(err error) bool {
+		return err != nil && slice.ContainsString(codes, CodeForError(err).Code)
+	})
+}
+
+func RetryOnError(process func() error) error {
+	return Retry(defaultRetryNum, defaultRetryInterval, process, func(err error) bool {
+		return err != nil
+	})
 }
