@@ -11,6 +11,10 @@ import (
 	cdiv1alpha1 "kubevirt.io/containerized-data-importer/pkg/apis/core/v1alpha1"
 )
 
+const (
+	ImageIDAnnotationKey = "harvester.cattle.io/imageId"
+)
+
 func (v *VMBuilder) generateDiskName() string {
 	return fmt.Sprintf("disk-%d", len(v.dataVolumeNames))
 }
@@ -29,6 +33,7 @@ func (v *VMBuilder) SSHKey(sshKeyName string) *VMBuilder {
 }
 
 type DataVolumeOption struct {
+	ImageID          string
 	HTTPURL          string
 	VolumeMode       corev1.PersistentVolumeMode
 	AccessMode       corev1.PersistentVolumeAccessMode
@@ -60,9 +65,7 @@ func (v *VMBuilder) DataVolume(diskSize, diskBus string, opt *DataVolumeOption) 
 	}
 	dataVolumeTemplate := kubevirtv1.DataVolumeTemplateSpec{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        dataVolumeName,
-			Labels:      nil,
-			Annotations: nil,
+			Name: dataVolumeName,
 		},
 		Spec: cdiv1alpha1.DataVolumeSpec{
 			Source: dataVolumeSpecSource,
@@ -79,6 +82,11 @@ func (v *VMBuilder) DataVolume(diskSize, diskBus string, opt *DataVolumeOption) 
 				StorageClassName: opt.StorageClassName,
 			},
 		},
+	}
+	if opt.ImageID != "" {
+		dataVolumeTemplate.Annotations = map[string]string{
+			ImageIDAnnotationKey: opt.ImageID,
+		}
 	}
 	dataVolumeTemplates = append(dataVolumeTemplates, dataVolumeTemplate)
 	v.vm.Spec.DataVolumeTemplates = dataVolumeTemplates
