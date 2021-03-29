@@ -62,7 +62,7 @@ github.com/guonaihong/gout/export
 github.com/guonaihong/gout/filter
 github.com/guonaihong/gout/interface
 github.com/guonaihong/gout/setting
-# github.com/harvester/go-harvester v0.0.0-20210326054745-afc1c31eda15
+# github.com/harvester/go-harvester v0.0.0-20210329095627-a5f87ee72232
 github.com/harvester/go-harvester/pkg/builder
 github.com/harvester/go-harvester/pkg/client
 github.com/harvester/go-harvester/pkg/client/generated/v1
