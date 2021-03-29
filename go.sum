@@ -556,6 +556,8 @@ github.com/harvester/go-harvester v0.0.0-20210325100145-886a09152102 h1:XWsqfuwq
 github.com/harvester/go-harvester v0.0.0-20210325100145-886a09152102/go.mod h1:zn6AdXSu+bWqy78sgwEbUUao2KvnkusEVh+E5lxQ1cU=
 github.com/harvester/go-harvester v0.0.0-20210326054745-afc1c31eda15 h1:cc58S/uK+ur9d7aTDOf4fcnITUHsUAnEze9gOKQyK6o=
 github.com/harvester/go-harvester v0.0.0-20210326054745-afc1c31eda15/go.mod h1:zn6AdXSu+bWqy78sgwEbUUao2KvnkusEVh+E5lxQ1cU=
+github.com/harvester/go-harvester v0.0.0-20210329095627-a5f87ee72232 h1:ODs+eS6EU6ofbapdBy1f7xG/hcN1UIu8W+/u/UMgbRs=
+github.com/harvester/go-harvester v0.0.0-20210329095627-a5f87ee72232/go.mod h1:zn6AdXSu+bWqy78sgwEbUUao2KvnkusEVh+E5lxQ1cU=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/api v1.3.0/go.mod h1:MmDNSzIMUjNpY/mQ398R4bk2FnqQLoPndWW5VkKPlCE=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=

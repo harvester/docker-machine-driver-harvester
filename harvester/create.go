@@ -115,7 +115,7 @@ func (d *Driver) Create() error {
 			AccessMode: corev1.ReadWriteOnce,
 		}
 	}
-
+	dataVolumeOption.ImageID = fmt.Sprintf("%s/%s", d.Namespace, d.ImageName)
 	// create vm
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.Namespace).Name(d.MachineName).
