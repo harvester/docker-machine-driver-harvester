@@ -46,7 +46,7 @@ replace (
 )
 
 require (
-	github.com/harvester/go-harvester v0.0.0-20210326054745-afc1c31eda15
+	github.com/harvester/go-harvester v0.0.0-20210329095627-a5f87ee72232
 	github.com/rancher/machine v0.15.0-rancher52
 	k8s.io/api v0.20.4
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
