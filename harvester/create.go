@@ -3,6 +3,7 @@ package harvester
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/harvester/go-harvester/pkg/builder"
@@ -101,7 +102,7 @@ func (d *Driver) Create() error {
 	if err != nil {
 		return err
 	}
-	supportLiveMigrate := serverVersion.Value != "0.1.0"
+	supportLiveMigrate := !strings.HasPrefix(serverVersion.Value, "v0.1.0")
 	if supportLiveMigrate {
 		dataVolumeOption = &builder.DataVolumeOption{
 			VolumeMode:       corev1.PersistentVolumeBlock,
