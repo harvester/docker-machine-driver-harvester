@@ -18,6 +18,10 @@ const (
 
 	defaultVMCPUCores = 1
 	defaultVMMemory   = "256Mi"
+
+	VMCreatorLabel        = "harvester.cattle.io/creator"
+	VMSSHNamesAnnotation  = "harvester.cattle.io/sshNames"
+	VMDiskNamesAnnotation = "harvester.cattle.io/diskNames"
 )
 
 type VMBuilder struct {
@@ -29,7 +33,7 @@ type VMBuilder struct {
 
 func NewVMBuilder(creator string) *VMBuilder {
 	vmLabels := map[string]string{
-		"harvester.cattle.io/creator": creator,
+		VMCreatorLabel: creator,
 	}
 	objectMeta := metav1.ObjectMeta{
 		Namespace:    defaultVMNamespace,
@@ -58,6 +62,7 @@ func NewVMBuilder(creator string) *VMBuilder {
 				},
 				Resources: resources,
 			},
+			Affinity: &corev1.Affinity{},
 			Networks: []kubevirtv1.Network{},
 			Volumes:  []kubevirtv1.Volume{},
 		},
@@ -108,6 +113,39 @@ func (v *VMBuilder) EvictionStrategy(liveMigrate bool) *VMBuilder {
 	return v
 }
 
+func (v *VMBuilder) DefaultPodAntiAffinity() *VMBuilder {
+	podAffinityTerm := corev1.PodAffinityTerm{
+		LabelSelector: &metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      VMCreatorLabel,
+					Operator: metav1.LabelSelectorOpExists,
+				},
+			},
+		},
+		TopologyKey: corev1.LabelHostname,
+	}
+	return v.PodAntiAffinity(podAffinityTerm, true, 100)
+}
+
+func (v *VMBuilder) PodAntiAffinity(podAffinityTerm corev1.PodAffinityTerm, soft bool, weight int32) *VMBuilder {
+	podAffinity := &corev1.PodAntiAffinity{}
+	if soft {
+		podAffinity.PreferredDuringSchedulingIgnoredDuringExecution = []corev1.WeightedPodAffinityTerm{
+			{
+				Weight:          weight,
+				PodAffinityTerm: podAffinityTerm,
+			},
+		}
+	} else {
+		podAffinity.RequiredDuringSchedulingIgnoredDuringExecution = []corev1.PodAffinityTerm{
+			podAffinityTerm,
+		}
+	}
+	v.vm.Spec.Template.Spec.Affinity.PodAntiAffinity = podAffinity
+	return v
+}
+
 func (v *VMBuilder) Run() *clientv1.VirtualMachine {
 	v.vm.Spec.Running = pointer.BoolPtr(true)
 	return v.VM()
@@ -121,12 +159,12 @@ func (v *VMBuilder) VM() *clientv1.VirtualMachine {
 	if err != nil {
 		return v.vm
 	}
-	v.vm.Spec.Template.ObjectMeta.Annotations["harvester.cattle.io/sshNames"] = string(sshNames)
+	v.vm.Spec.Template.ObjectMeta.Annotations[VMSSHNamesAnnotation] = string(sshNames)
 	dataVolumeNames, err := json.Marshal(v.dataVolumeNames)
 	if err != nil {
 		return v.vm
 	}
-	v.vm.Spec.Template.ObjectMeta.Annotations["harvester.cattle.io/diskNames"] = string(dataVolumeNames)
+	v.vm.Spec.Template.ObjectMeta.Annotations[VMDiskNamesAnnotation] = string(dataVolumeNames)
 	return v.vm
 }
 
