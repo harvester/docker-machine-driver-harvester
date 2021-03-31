@@ -123,6 +123,7 @@ func (d *Driver) Create() error {
 		CPU(d.CPU).Memory(d.MemorySize).
 		Image(d.DiskSize, d.DiskBus, dataVolumeOption).
 		EvictionStrategy(supportLiveMigrate).
+		DefaultPodAntiAffinity().
 		CloudInit(userData, networkData)
 
 	if d.KeyPairName != "" {
