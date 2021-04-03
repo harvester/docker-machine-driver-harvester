@@ -91,7 +91,7 @@ func (d *Driver) GetIP() (string, error) {
 		return "", err
 	}
 
-	return vmi.Status.Interfaces[0].IP, nil
+	return strings.Split(vmi.Status.Interfaces[0].IP, "/")[0], nil
 }
 
 func (d *Driver) GetState() (state.State, error) {
