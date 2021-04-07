@@ -62,7 +62,7 @@ github.com/guonaihong/gout/export
 github.com/guonaihong/gout/filter
 github.com/guonaihong/gout/interface
 github.com/guonaihong/gout/setting
-# github.com/harvester/go-harvester v0.0.0-20210331082225-d1b62a5815f8
+# github.com/harvester/go-harvester v0.0.0-20210407083506-3c5dcb6a2f6f
 github.com/harvester/go-harvester/pkg/builder
 github.com/harvester/go-harvester/pkg/client
 github.com/harvester/go-harvester/pkg/client/generated/v1
@@ -94,7 +94,7 @@ github.com/pborman/uuid
 github.com/pkg/errors
 # github.com/rancher/apiserver v0.0.0-20210209001659-a17289640582
 github.com/rancher/apiserver/pkg/types
-# github.com/rancher/harvester v0.0.2-0.20210312094853-bd3ff23b03b8
+# github.com/rancher/harvester v0.0.2-0.20210406071214-bde3f1680e82
 github.com/rancher/harvester/pkg/apis/harvester.cattle.io
 github.com/rancher/harvester/pkg/apis/harvester.cattle.io/v1alpha1
 # github.com/rancher/lasso v0.0.0-20210219160604-9baf1c12751b
@@ -386,7 +386,7 @@ k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/workqueue
 # k8s.io/klog/v2 v2.4.0
 k8s.io/klog/v2
-# k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd
+# k8s.io/kube-openapi v0.0.0-20210113233702-8566a335510f
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
 # k8s.io/utils v0.0.0-20201110183641-67b214c5f920
