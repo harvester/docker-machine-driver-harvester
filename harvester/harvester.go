@@ -29,13 +29,14 @@ type Driver struct {
 	Password  string
 	Namespace string
 
+	ServerVersion string
+
 	CPU        int
 	MemorySize string
 	DiskSize   string
 	DiskBus    string
 
-	ImageName        string
-	ImageDownloadURL string
+	ImageName string
 
 	KeyPairName       string
 	SSHPrivateKeyPath string

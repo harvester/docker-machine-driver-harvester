@@ -27,6 +27,16 @@ func (d *Driver) PreCreateCheck() error {
 		return err
 	}
 
+	// server version
+	serverVersion, err := c.Settings.Get("server-version")
+	if err != nil {
+		return err
+	}
+	d.ServerVersion = serverVersion.Value
+	if strings.HasPrefix(d.ServerVersion, "v0.1.0") {
+		return fmt.Errorf("current harvester server version is %s, only support v0.2.0+", d.ServerVersion)
+	}
+
 	// vm doesn't exist
 	_, err = c.VirtualMachines.Get(d.Namespace, d.MachineName)
 	if err == nil {
@@ -34,19 +44,13 @@ func (d *Driver) PreCreateCheck() error {
 	}
 
 	// image exist
-	image, err := c.Images.Get(d.Namespace, d.ImageName)
+	_, err = c.Images.Get(d.Namespace, d.ImageName)
 	if err != nil {
 		if goharverrors.IsNotFound(err) {
 			return fmt.Errorf("image %s doesn't exist in namespace %s", d.ImageName, d.Namespace)
 		}
 		return err
 	}
-
-	// image succeed
-	if image.Status.Progress != 100 {
-		return fmt.Errorf("image %s's progress %d != 100", image.Name, image.Status.Progress)
-	}
-	d.ImageDownloadURL = image.Status.DownloadURL
 
 	if d.KeyPairName != "" {
 		keypair, err := c.Keypairs.Get(keypairNamespace, d.KeyPairName)
@@ -97,32 +101,19 @@ func (d *Driver) Create() error {
 
 	userData, networkData := d.createCloudInit()
 
-	var dataVolumeOption *builder.DataVolumeOption
-	serverVersion, err := c.Settings.Get("server-version")
-	if err != nil {
-		return err
+	dataVolumeOption := &builder.DataVolumeOption{
+		VolumeMode:       corev1.PersistentVolumeBlock,
+		AccessMode:       corev1.ReadWriteMany,
+		StorageClassName: pointer.StringPtr("longhorn-" + d.ImageName),
+		ImageID:          fmt.Sprintf("%s/%s", d.Namespace, d.ImageName),
 	}
-	supportLiveMigrate := !strings.HasPrefix(serverVersion.Value, "v0.1.0")
-	if supportLiveMigrate {
-		dataVolumeOption = &builder.DataVolumeOption{
-			VolumeMode:       corev1.PersistentVolumeBlock,
-			AccessMode:       corev1.ReadWriteMany,
-			StorageClassName: pointer.StringPtr("longhorn-" + d.ImageName),
-		}
-	} else {
-		dataVolumeOption = &builder.DataVolumeOption{
-			HTTPURL:    d.ImageDownloadURL,
-			VolumeMode: corev1.PersistentVolumeFilesystem,
-			AccessMode: corev1.ReadWriteOnce,
-		}
-	}
-	dataVolumeOption.ImageID = fmt.Sprintf("%s/%s", d.Namespace, d.ImageName)
+
 	// create vm
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.Namespace).Name(d.MachineName).
 		CPU(d.CPU).Memory(d.MemorySize).
 		Image(d.DiskSize, d.DiskBus, dataVolumeOption).
-		EvictionStrategy(supportLiveMigrate).
+		EvictionStrategy(true).
 		DefaultPodAntiAffinity().
 		CloudInit(userData, networkData)
 
