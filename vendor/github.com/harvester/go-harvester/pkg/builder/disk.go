@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ImageIDAnnotationKey = "harvester.cattle.io/imageId"
+	ImageIDAnnotationKey = HarvesterLabelAnnotationPrefix + "imageId"
 )
 
 func (v *VMBuilder) generateDiskName() string {
