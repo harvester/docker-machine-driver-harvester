@@ -10,6 +10,7 @@ import (
 	kubevirtv1 "kubevirt.io/client-go/api/v1"
 
 	clientv1 "github.com/harvester/go-harvester/pkg/client/generated/v1"
+	"github.com/harvester/go-harvester/pkg/utils"
 )
 
 const (
@@ -19,9 +20,11 @@ const (
 	defaultVMCPUCores = 1
 	defaultVMMemory   = "256Mi"
 
-	VMCreatorLabel        = "harvester.cattle.io/creator"
-	VMSSHNamesAnnotation  = "harvester.cattle.io/sshNames"
-	VMDiskNamesAnnotation = "harvester.cattle.io/diskNames"
+	HarvesterLabelAnnotationPrefix = utils.HarvesterAPIGroup + "/"
+	VMCreatorLabel                 = HarvesterLabelAnnotationPrefix + "creator"
+	VMNameLabel                    = HarvesterLabelAnnotationPrefix + "vmName"
+	VMSSHNamesAnnotation           = HarvesterLabelAnnotationPrefix + "sshNames"
+	VMDiskNamesAnnotation          = HarvesterLabelAnnotationPrefix + "diskNames"
 )
 
 type VMBuilder struct {
@@ -84,7 +87,7 @@ func NewVMBuilder(creator string) *VMBuilder {
 func (v *VMBuilder) Name(name string) *VMBuilder {
 	v.vm.ObjectMeta.Name = name
 	v.vm.ObjectMeta.GenerateName = ""
-	v.vm.Spec.Template.ObjectMeta.Labels["harvester.cattle.io/vmName"] = name
+	v.vm.Spec.Template.ObjectMeta.Labels[VMNameLabel] = name
 	return v
 }
 

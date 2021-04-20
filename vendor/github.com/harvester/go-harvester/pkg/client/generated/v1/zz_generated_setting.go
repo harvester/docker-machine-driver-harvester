@@ -7,7 +7,7 @@ import (
 	"github.com/harvester/go-harvester/pkg/clientbase"
 	"github.com/harvester/go-harvester/pkg/errors"
 	"github.com/rancher/apiserver/pkg/types"
-	harv1 "github.com/rancher/harvester/pkg/apis/harvester.cattle.io/v1alpha1"
+	harv1 "github.com/rancher/harvester/pkg/apis/harvesterhci.io/v1beta1"
 )
 
 type Setting harv1.Setting
@@ -23,7 +23,7 @@ type SettingClient struct {
 
 func newSettingClient(c *Client) *SettingClient {
 	return &SettingClient{
-		APIClient: clientbase.NewAPIClient(c.BaseURL, c.HTTPClient, "v1", "harvester.cattle.io.settings"),
+		APIClient: clientbase.NewAPIClient(c.BaseURL, c.HTTPClient, "v1", "harvesterhci.io.settings"),
 	}
 }
 
@@ -88,6 +88,9 @@ func (c *SettingClient) Delete(name string, opts ...interface{}) (*Setting, erro
 	respCode, respBody, err := c.APIClient.Delete(resourceName, opts...)
 	if err != nil {
 		return nil, err
+	}
+	if respCode == http.StatusNoContent {
+		return nil, nil
 	}
 	if respCode != http.StatusOK {
 		return nil, errors.NewResponseError(respCode, respBody)

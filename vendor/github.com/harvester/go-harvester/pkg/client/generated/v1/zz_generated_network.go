@@ -89,6 +89,9 @@ func (c *NetworkClient) Delete(namespace, name string, opts ...interface{}) (*Ne
 	if err != nil {
 		return nil, err
 	}
+	if respCode == http.StatusNoContent {
+		return nil, nil
+	}
 	if respCode != http.StatusOK {
 		return nil, errors.NewResponseError(respCode, respBody)
 	}
