@@ -39,13 +39,13 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.20.4
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.20.4
 
-	kubevirt.io/client-go => github.com/rancher/kubevirt-client-go v0.20.2-0.20210226083314-113aa8c70a95
+	kubevirt.io/client-go => github.com/kubevirt/client-go v0.40.0-rc.2
 	kubevirt.io/containerized-data-importer => github.com/rancher/kubevirt-containerized-data-importer v1.26.1-0.20210303063201-9e7a78643487
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 )
 
 require (
-	github.com/harvester/go-harvester v0.0.0-20210407083506-3c5dcb6a2f6f
+	github.com/harvester/go-harvester v0.0.0-20210420084313-f4fb39208dbb
 	github.com/rancher/machine v0.15.0-rancher52
 	k8s.io/api v0.20.4
 	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
