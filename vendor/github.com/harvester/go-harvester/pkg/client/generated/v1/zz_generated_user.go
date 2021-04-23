@@ -6,8 +6,8 @@ import (
 
 	"github.com/harvester/go-harvester/pkg/clientbase"
 	"github.com/harvester/go-harvester/pkg/errors"
+	harv1 "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
 	"github.com/rancher/apiserver/pkg/types"
-	harv1 "github.com/rancher/harvester/pkg/apis/harvesterhci.io/v1beta1"
 )
 
 type User harv1.User
