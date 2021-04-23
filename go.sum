@@ -616,8 +616,10 @@ github.com/grpc-ecosystem/grpc-health-probe v0.2.0/go.mod h1:4GVx/bTCtZaSzhjbGue
 github.com/guonaihong/gout v0.1.3/go.mod h1:vXvv5Kxr70eM5wrp4F0+t9lnLWmq+YPW2GByll2f/EA=
 github.com/guonaihong/gout v0.1.5 h1:1FeFFJWWdWYApBW9d6vzMDB4eR4Zr8T/gaVrjDVcl5U=
 github.com/guonaihong/gout v0.1.5/go.mod h1:0rFYAYyzbcxEg11eY2qUbffJs7hHRPeugAnlVYSp8Ic=
-github.com/harvester/go-harvester v0.0.0-20210420084313-f4fb39208dbb h1:v5uxU/LCo/b0rtaGrv91HegGkHXGYxbvo+zVdyAqZFY=
-github.com/harvester/go-harvester v0.0.0-20210420084313-f4fb39208dbb/go.mod h1:ZPslgz4giyHU5GHDE4qvNiaWr7y5YAvDu9bQGqfxGmw=
+github.com/harvester/go-harvester v0.0.0-20210423031743-b2058399c0bb h1:YdasvUD1TaHEcsiHW9wvt1lY8eVwPY5/cKzxPO3wdgQ=
+github.com/harvester/go-harvester v0.0.0-20210423031743-b2058399c0bb/go.mod h1:/4BiNqnNK5HGfvlanwKv0RZLXNTIaE8GT3D1w4Vmt+Y=
+github.com/harvester/harvester v0.0.2-0.20210422150733-631d78c05787 h1:JY/CmblFHWHcuixZe/MEGc9SeHgKjxFClhCCPparGiQ=
+github.com/harvester/harvester v0.0.2-0.20210422150733-631d78c05787/go.mod h1:CXJfmbM42SA4bUQbVjQcAbLgfJ35eIM7UxWm5E+s+sU=
 github.com/hashicorp/consul/api v1.1.0/go.mod h1:VmuI/Lkw1nC05EYQWNKwWGbkg+FbDBtguAZLlVdkD9Q=
 github.com/hashicorp/consul/api v1.3.0/go.mod h1:MmDNSzIMUjNpY/mQ398R4bk2FnqQLoPndWW5VkKPlCE=
 github.com/hashicorp/consul/sdk v0.1.1/go.mod h1:VKf9jXwCTEY1QZP2MOLRhb5i/I/ssyNV1vwHyQBF0x8=
@@ -1052,8 +1054,6 @@ github.com/rancher/dynamiclistener v0.2.1-0.20200714201033-9c1939da3af9/go.mod h
 github.com/rancher/dynamiclistener v0.2.1-0.20200910203214-85f32491cb09/go.mod h1:qr0QfhwzcVCR+Ao9WyfnE+jmOpfEAdRhXtNOZGJ3nCQ=
 github.com/rancher/eks-operator v1.0.6/go.mod h1:GB2kyPtIN0r+DGlUcDgEUMsB4qRwZH7OKsraemZT+GA=
 github.com/rancher/go-rancher v0.1.1-0.20190307222549-9756097e5e4c/go.mod h1:7oQvGNiJsGvrUgB+7AH8bmdzuR0uhULfwKb43Ht0hUk=
-github.com/rancher/harvester v0.0.2-0.20210420062805-c8e3e5b1f1e6 h1:iI0LVWEEufg1wnFYZM5vMN2n17J1XxSsu1asXH+4XcQ=
-github.com/rancher/harvester v0.0.2-0.20210420062805-c8e3e5b1f1e6/go.mod h1:PXGp2rC8aVrxFgcxR96SpRtEraMARGuHKPX3q3wDMoI=
 github.com/rancher/kubernetes-provider-detector v0.1.2/go.mod h1:ypuJS7kP7rUiAn330xG46mj+Nhvym05GM8NqMVekpH0=
 github.com/rancher/kubevirt-containerized-data-importer v1.26.1-0.20210303063201-9e7a78643487 h1:kUldJr2o5X/mnL5xylWQed1qH15VGlnMBpgjwwaCotY=
 github.com/rancher/kubevirt-containerized-data-importer v1.26.1-0.20210303063201-9e7a78643487/go.mod h1:ur+s6O4/uYD8re3OIVgyiyGzVLIxOUL3kB5E7pR9SIQ=
