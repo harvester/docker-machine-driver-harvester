@@ -17,10 +17,6 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-const (
-	keypairNamespace = "harvester-system"
-)
-
 func (d *Driver) PreCreateCheck() error {
 	c, err := d.getClient()
 	if err != nil {
@@ -53,10 +49,10 @@ func (d *Driver) PreCreateCheck() error {
 	}
 
 	if d.KeyPairName != "" {
-		keypair, err := c.Keypairs.Get(keypairNamespace, d.KeyPairName)
+		keypair, err := c.Keypairs.Get(d.Namespace, d.KeyPairName)
 		if err != nil {
 			if goharverrors.IsNotFound(err) {
-				return fmt.Errorf("keypair %s doesn't exist in namespace %s", d.KeyPairName, keypairNamespace)
+				return fmt.Errorf("keypair %s doesn't exist in namespace %s", d.KeyPairName, d.Namespace)
 			}
 			return err
 		}
