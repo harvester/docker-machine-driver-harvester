@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	goharv "github.com/harvester/go-harvester/pkg/client"
 	goharv1 "github.com/harvester/go-harvester/pkg/client/generated/v1"
 	goharverrors "github.com/harvester/go-harvester/pkg/errors"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
+	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/state"
 )
 
@@ -120,8 +122,7 @@ func getStateFormVMI(vmi *goharv1.VirtualMachineInstance) state.State {
 	switch vmi.Status.Phase {
 	case "Pending", "Scheduling", "Scheduled":
 		return state.Starting
-	case
-		"Running":
+	case "Running":
 		return state.Running
 	case "Succeeded":
 		return state.Stopping
@@ -132,23 +133,20 @@ func getStateFormVMI(vmi *goharv1.VirtualMachineInstance) state.State {
 	}
 }
 
-func (d *Driver) Kill() error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
-	vm, err := c.VirtualMachines.Get(d.Namespace, d.MachineName)
-	if err != nil {
-		if goharverrors.IsNotFound(err) {
-			return nil
+func (d *Driver) waitRemoved() error {
+	removed := func() bool {
+		if _, err := d.getVM(); err != nil {
+			if goharverrors.IsNotFound(err) {
+				return true
+			}
 		}
-		return err
+		return false
 	}
-	*vm.Spec.Running = false
-	*vm.Spec.Template.Spec.TerminationGracePeriodSeconds = 0
-	log.Debugf("Kill node")
-	_, err = c.VirtualMachines.Update(d.Namespace, d.MachineName, vm)
-	return err
+	log.Debugf("Waiting for node removed")
+	if err := mcnutils.WaitForSpecific(removed, 120, 5*time.Second); err != nil {
+		return fmt.Errorf("Too many retries waiting for machine removed.  Last error: %s", err)
+	}
+	return nil
 }
 
 func (d *Driver) Remove() error {
@@ -173,9 +171,14 @@ func (d *Driver) Remove() error {
 	}
 	log.Debugf("Remove node")
 	_, err = c.VirtualMachines.Delete(d.Namespace, d.MachineName, map[string]string{
-		"removedDisks": strings.Join(removedDisks, ","),
+		"removedDisks":      strings.Join(removedDisks, ","),
+		"propagationPolicy": "Foreground",
 	})
-	return err
+	if err != nil {
+		return err
+	}
+
+	return d.waitRemoved()
 }
 
 func (d *Driver) Restart() error {
@@ -216,7 +219,14 @@ func (d *Driver) Stop() error {
 		return err
 	}
 	log.Debugf("Stop node")
-	return c.VirtualMachines.Stop(d.Namespace, d.MachineName)
+	if err = c.VirtualMachines.Stop(d.Namespace, d.MachineName); err != nil {
+		return err
+	}
+	return d.waitForState(state.Stopped)
+}
+
+func (d *Driver) Kill() error {
+	return d.Stop()
 }
 
 func (d *Driver) getVMI() (*goharv1.VirtualMachineInstance, error) {
@@ -225,4 +235,12 @@ func (d *Driver) getVMI() (*goharv1.VirtualMachineInstance, error) {
 		return nil, err
 	}
 	return c.VirtualMachineInstances.Get(d.Namespace, d.MachineName)
+}
+
+func (d *Driver) getVM() (*goharv1.VirtualMachine, error) {
+	c, err := d.getClient()
+	if err != nil {
+		return nil, err
+	}
+	return c.VirtualMachines.Get(d.Namespace, d.MachineName)
 }
