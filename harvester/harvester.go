@@ -25,11 +25,12 @@ type Driver struct {
 
 	client *goharv.Client
 
-	Host      string
-	Port      int
-	Username  string
-	Password  string
-	Namespace string
+	Host        string
+	Port        int
+	Username    string
+	Password    string
+	Namespace   string
+	ClusterType string
 
 	ServerVersion string
 

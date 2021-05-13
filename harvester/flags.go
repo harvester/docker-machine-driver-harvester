@@ -48,6 +48,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "harvester password",
 		},
 		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_CLUSTER_TYPE",
+			Name:   "harvester-cluster-type",
+			Usage:  "harvester cluster type",
+		},
+		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_NAMESPACE",
 			Name:   "harvester-namespace",
 			Usage:  "harvester namespace",
@@ -135,6 +140,7 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.Username = flags.String("harvester-username")
 	d.Password = flags.String("harvester-password")
 	d.Namespace = flags.String("harvester-namespace")
+	d.ClusterType = flags.String("harvester-cluster-type")
 
 	d.CPU = flags.Int("harvester-cpu-count")
 	d.MemorySize = fmt.Sprintf("%dGi", flags.Int("harvester-memory-size"))
