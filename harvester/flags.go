@@ -126,6 +126,16 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "harvester network name",
 		},
 		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_ANNOTATIONS",
+			Name:   "harvester-annotations",
+			Usage:  "harvester annotations",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_ANNOTATIONS",
+			Name:   "harvester-labels",
+			Usage:  "harvester labels",
+		},
+		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_NETWORK_MODEL",
 			Name:   "harvester-network-model",
 			Usage:  "harvester network model",
@@ -160,6 +170,9 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 
 	d.NetworkName = flags.String("harvester-network-name")
 	d.NetworkModel = flags.String("harvester-network-model")
+
+	d.Annotations = flags.String("harvester-annotations")
+	d.Labels = flags.String("harvester-labels")
 
 	d.SetSwarmConfigFromFlags(flags)
 

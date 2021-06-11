@@ -1,6 +1,7 @@
 package harvester
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -104,6 +105,17 @@ func (d *Driver) Create() error {
 		ImageID:          fmt.Sprintf("%s/%s", d.Namespace, d.ImageName),
 	}
 
+	templateAnnotations := make(map[string]string)
+	j_err := json.Unmarshal([]byte(d.Annotations), &templateAnnotations)
+	if j_err != nil {
+		panic(j_err)
+	}
+	templateLabels := make(map[string]string)
+	l_err := json.Unmarshal([]byte(d.Labels), &templateLabels)
+	if l_err != nil {
+		panic(l_err)
+	}
+
 	// create vm
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.Namespace).Name(d.MachineName).
@@ -111,6 +123,8 @@ func (d *Driver) Create() error {
 		Image(d.DiskSize, d.DiskBus, dataVolumeOption).
 		EvictionStrategy(true).
 		DefaultPodAntiAffinity().
+		SpecTemplateAnnotations(templateAnnotations).
+		SpecTemplateLabels(templateLabels).
 		CloudInit(userData, networkData)
 
 	if d.KeyPairName != "" {
