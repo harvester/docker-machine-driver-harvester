@@ -52,6 +52,9 @@ type Driver struct {
 
 	NetworkName  string
 	NetworkModel string
+
+	Annotations string
+	Labels      string
 }
 
 func NewDriver(hostName, storePath string) *Driver {

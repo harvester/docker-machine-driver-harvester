@@ -42,6 +42,7 @@ replace (
 	kubevirt.io/client-go => github.com/kubevirt/client-go v0.40.0-rc.2
 	kubevirt.io/containerized-data-importer => github.com/rancher/kubevirt-containerized-data-importer v1.26.1-0.20210303063201-9e7a78643487
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
+	github.com/harvester/go-harvester => github.com/nicolamarella/go-harvester v0.0.0-20210611103401-4ab3f45066a7
 )
 
 require (
