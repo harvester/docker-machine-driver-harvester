@@ -1,21 +1,27 @@
 package harvester
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"strings"
 	"time"
 
-	goharv "github.com/harvester/go-harvester/pkg/client"
-	goharv1 "github.com/harvester/go-harvester/pkg/client/generated/v1"
-	goharverrors "github.com/harvester/go-harvester/pkg/errors"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/state"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
 )
 
-const driverName = "harvester"
+const (
+	driverName    = "harvester"
+	vmResource    = "virtualmachines"
+	actionStart   = "start"
+	actionStop    = "stop"
+	actionRestart = "restart"
+)
 
 // Driver is the driver used when no driver is selected. It is used to
 // connect to existing Docker hosts by specifying the URL of the host as
@@ -23,14 +29,14 @@ const driverName = "harvester"
 type Driver struct {
 	*drivers.BaseDriver
 
-	client *goharv.Client
+	client *Client
+	ctx    context.Context
 
-	Host        string
-	Port        int
-	Username    string
-	Password    string
-	Namespace   string
+	KubeConfigContent string
+
+	VMNamespace string
 	ClusterType string
+	ClusterID   string
 
 	ServerVersion string
 
@@ -52,6 +58,10 @@ type Driver struct {
 
 	NetworkName  string
 	NetworkModel string
+
+	CloudConfig string
+	UserData    string
+	NetworkData string
 }
 
 func NewDriver(hostName, storePath string) *Driver {
@@ -60,6 +70,7 @@ func NewDriver(hostName, storePath string) *Driver {
 			MachineName: hostName,
 			StorePath:   storePath,
 		},
+		ctx: context.Background(),
 	}
 }
 
@@ -99,19 +110,13 @@ func (d *Driver) GetIP() (string, error) {
 }
 
 func (d *Driver) GetState() (state.State, error) {
-	c, err := d.getClient()
-	if err != nil {
+	if _, err := d.getVM(); err != nil {
 		return state.None, err
 	}
 
-	_, err = c.VirtualMachines.Get(d.Namespace, d.MachineName)
+	vmi, err := d.getVMI()
 	if err != nil {
-		return state.None, err
-	}
-
-	vmi, err := c.VirtualMachineInstances.Get(d.Namespace, d.MachineName)
-	if err != nil {
-		if goharverrors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return state.Stopped, nil
 		}
 		return state.None, err
@@ -119,7 +124,7 @@ func (d *Driver) GetState() (state.State, error) {
 	return getStateFormVMI(vmi), nil
 }
 
-func getStateFormVMI(vmi *goharv1.VirtualMachineInstance) state.State {
+func getStateFormVMI(vmi *kubevirtv1.VirtualMachineInstance) state.State {
 	switch vmi.Status.Phase {
 	case "Pending", "Scheduling", "Scheduled":
 		return state.Starting
@@ -137,7 +142,7 @@ func getStateFormVMI(vmi *goharv1.VirtualMachineInstance) state.State {
 func (d *Driver) waitRemoved() error {
 	removed := func() bool {
 		if _, err := d.getVM(); err != nil {
-			if goharverrors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return true
 			}
 		}
@@ -151,51 +156,37 @@ func (d *Driver) waitRemoved() error {
 }
 
 func (d *Driver) Remove() error {
-	c, err := d.getClient()
+	log.Debugf("Remove node")
+	vm, err := d.getVM()
 	if err != nil {
-		return err
-	}
-
-	vm, err := c.VirtualMachines.Get(d.Namespace, d.MachineName)
-	if err != nil {
-		if goharverrors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil
 		}
 		return err
 	}
-
-	removedDisks := make([]string, 0, len(vm.Spec.Template.Spec.Volumes))
-	for _, volume := range vm.Spec.Template.Spec.Volumes {
-		if volume.DataVolume != nil {
-			removedDisks = append(removedDisks, volume.Name)
-		}
-	}
-	log.Debugf("Remove node")
-	_, err = c.VirtualMachines.Delete(d.Namespace, d.MachineName, map[string]string{
-		"removedDisks":      strings.Join(removedDisks, ","),
-		"propagationPolicy": "Foreground",
-	})
-	if err != nil {
+	if err = d.deleteVM(); err != nil {
 		return err
 	}
-
+	for _, volume := range vm.Spec.Template.Spec.Volumes {
+		if volume.DataVolume == nil {
+			continue
+		}
+		if err = d.deleteVolume(volume.Name); err != nil && !apierrors.IsNotFound(err) {
+			return err
+		}
+	}
 	return d.waitRemoved()
 }
 
 func (d *Driver) Restart() error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
-	vmi, err := c.VirtualMachineInstances.Get(d.Namespace, d.MachineName)
+	log.Debugf("Restart node")
+	vmi, err := d.getVMI()
 	if err != nil {
 		return err
 	}
 	oldUID := string(vmi.UID)
 
-	log.Debugf("Restart node")
-	err = c.VirtualMachines.Restart(d.Namespace, d.MachineName)
-	if err != nil {
+	if err = d.putVMSubResource(actionRestart); err != nil {
 		return err
 	}
 
@@ -203,24 +194,16 @@ func (d *Driver) Restart() error {
 }
 
 func (d *Driver) Start() error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
 	log.Debugf("Start node")
-	if err = c.VirtualMachines.Start(d.Namespace, d.MachineName); err != nil {
+	if err := d.putVMSubResource(actionStart); err != nil {
 		return err
 	}
 	return d.waitForReady()
 }
 
 func (d *Driver) Stop() error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
 	log.Debugf("Stop node")
-	if err = c.VirtualMachines.Stop(d.Namespace, d.MachineName); err != nil {
+	if err := d.putVMSubResource(actionStop); err != nil {
 		return err
 	}
 	return d.waitForState(state.Stopped)
@@ -228,20 +211,4 @@ func (d *Driver) Stop() error {
 
 func (d *Driver) Kill() error {
 	return d.Stop()
-}
-
-func (d *Driver) getVMI() (*goharv1.VirtualMachineInstance, error) {
-	c, err := d.getClient()
-	if err != nil {
-		return nil, err
-	}
-	return c.VirtualMachineInstances.Get(d.Namespace, d.MachineName)
-}
-
-func (d *Driver) getVM() (*goharv1.VirtualMachine, error) {
-	c, err := d.getClient()
-	if err != nil {
-		return nil, err
-	}
-	return c.VirtualMachines.Get(d.Namespace, d.MachineName)
 }

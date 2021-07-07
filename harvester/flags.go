@@ -1,6 +1,7 @@
 package harvester
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 
@@ -10,9 +11,6 @@ import (
 
 const (
 	defaultNamespace = "default"
-
-	defaultInClusterHost = "harvester.harvester-system"
-	defaultInClusterPort = 8443
 
 	defaultCPU          = 2
 	defaultMemorySize   = 4
@@ -26,26 +24,9 @@ const (
 func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 	return []mcnflag.Flag{
 		mcnflag.StringFlag{
-			EnvVar: "HARVESTER_HOST",
-			Name:   "harvester-host",
-			Usage:  "harvester host",
-			Value:  defaultInClusterHost,
-		},
-		mcnflag.IntFlag{
-			EnvVar: "HARVESTER_PORT",
-			Name:   "harvester-port",
-			Usage:  "harvester port",
-			Value:  defaultInClusterPort,
-		},
-		mcnflag.StringFlag{
-			EnvVar: "HARVESTER_USERNAME",
-			Name:   "harvester-username",
-			Usage:  "harvester username",
-		},
-		mcnflag.StringFlag{
-			EnvVar: "HARVESTER_PASSWORD",
-			Name:   "harvester-password",
-			Usage:  "harvester password",
+			EnvVar: "HARVESTER_KUBECONFIG_CONTENT",
+			Name:   "harvester-kubeconfig-content",
+			Usage:  "contents of kubeconfig file for harvester cluster, base64 is supported",
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_CLUSTER_TYPE",
@@ -53,15 +34,20 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "harvester cluster type",
 		},
 		mcnflag.StringFlag{
-			EnvVar: "HARVESTER_NAMESPACE",
-			Name:   "harvester-namespace",
-			Usage:  "harvester namespace",
+			EnvVar: "HARVESTER_CLUSTER_ID",
+			Name:   "harvester-cluster-id",
+			Usage:  "harvester cluster id",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_VM_NAMESPACE",
+			Name:   "harvester-vm-namespace",
+			Usage:  "harvester vm namespace",
 			Value:  defaultNamespace,
 		},
 		mcnflag.IntFlag{
 			EnvVar: "HARVESTER_CPU_COUNT",
 			Name:   "harvester-cpu-count",
-			Usage:  "number of CPUs for the machine",
+			Usage:  "number of CPUs for machine",
 			Value:  defaultCPU,
 		},
 		mcnflag.IntFlag{
@@ -131,16 +117,30 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "harvester network model",
 			Value:  defaultNetworkModel,
 		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_CLOUD_CONFIG",
+			Name:   "harvester-cloud-config",
+			Usage:  "just keep it empty, this value will be filled by rancher-machine",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_USER_DATA",
+			Name:   "harvester-user-data",
+			Usage:  "userData content of cloud-init for machine, base64 is supported",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_NETWORK_DATA",
+			Name:   "harvester-network-data",
+			Usage:  "networkData content of cloud-init for machine, base64 is supported",
+		},
 	}
 }
 
 func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
-	d.Host = flags.String("harvester-host")
-	d.Port = flags.Int("harvester-port")
-	d.Username = flags.String("harvester-username")
-	d.Password = flags.String("harvester-password")
-	d.Namespace = flags.String("harvester-namespace")
+	d.KubeConfigContent = StringSupportBase64(flags.String("harvester-kubeconfig-content"))
+
+	d.VMNamespace = flags.String("harvester-vm-namespace")
 	d.ClusterType = flags.String("harvester-cluster-type")
+	d.ClusterID = flags.String("harvester-cluster-id")
 
 	d.CPU = flags.Int("harvester-cpu-count")
 	d.MemorySize = fmt.Sprintf("%dGi", flags.Int("harvester-memory-size"))
@@ -161,18 +161,16 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.NetworkName = flags.String("harvester-network-name")
 	d.NetworkModel = flags.String("harvester-network-model")
 
+	d.CloudConfig = flags.String("harvester-cloud-config")
+	d.UserData = StringSupportBase64(flags.String("harvester-user-data"))
+	d.NetworkData = StringSupportBase64(flags.String("harvester-network-data"))
+
 	d.SetSwarmConfigFromFlags(flags)
 
 	return d.checkConfig()
 }
 
 func (d *Driver) checkConfig() error {
-	if d.Username == "" {
-		return errors.New("must specify harvester username")
-	}
-	if d.Password == "" {
-		return errors.New("must specify harvester password")
-	}
 	if d.ImageName == "" {
 		return errors.New("must specify harvester image name")
 	}
@@ -189,4 +187,15 @@ func (d *Driver) checkConfig() error {
 		return fmt.Errorf("unknown network type %s", d.NetworkType)
 	}
 	return nil
+}
+
+func StringSupportBase64(value string) string {
+	if value == "" {
+		return value
+	}
+	valueByte, err := base64.StdEncoding.DecodeString(value)
+	if err != nil {
+		valueByte = []byte(value)
+	}
+	return string(valueByte)
 }
