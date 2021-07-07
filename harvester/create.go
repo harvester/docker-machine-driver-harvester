@@ -6,25 +6,28 @@ import (
 	"strings"
 	"time"
 
-	"github.com/harvester/go-harvester/pkg/builder"
-	goharverrors "github.com/harvester/go-harvester/pkg/errors"
+	harvsterv1 "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
+	"github.com/harvester/harvester/pkg/builder"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/ssh"
 	"github.com/rancher/machine/libmachine/state"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
+	kubevirtv1 "kubevirt.io/client-go/api/v1"
+)
+
+const (
+	rootDiskName  = "disk-0"
+	interfaceName = "nic-0"
 )
 
 func (d *Driver) PreCreateCheck() error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
-
 	// server version
-	serverVersion, err := c.Settings.Get("server-version")
+	serverVersion, err := d.getSetting("server-version")
 	if err != nil {
 		return err
 	}
@@ -34,25 +37,23 @@ func (d *Driver) PreCreateCheck() error {
 	}
 
 	// vm doesn't exist
-	_, err = c.VirtualMachines.Get(d.Namespace, d.MachineName)
-	if err == nil {
-		return fmt.Errorf("machine %s already exists", d.MachineName)
+	if _, err = d.getVM(); err == nil {
+		return fmt.Errorf("machine %s already exists in namespace %s", d.MachineName, d.VMNamespace)
 	}
 
 	// image exist
-	_, err = c.Images.Get(d.Namespace, d.ImageName)
-	if err != nil {
-		if goharverrors.IsNotFound(err) {
-			return fmt.Errorf("image %s doesn't exist in namespace %s", d.ImageName, d.Namespace)
+	if _, err = d.getImage(); err != nil {
+		if apierrors.IsNotFound(err) {
+			return fmt.Errorf("image %s doesn't exist", d.ImageName)
 		}
 		return err
 	}
 
 	if d.KeyPairName != "" {
-		keypair, err := c.Keypairs.Get(d.Namespace, d.KeyPairName)
+		keypair, err := d.getKeyPair()
 		if err != nil {
-			if goharverrors.IsNotFound(err) {
-				return fmt.Errorf("keypair %s doesn't exist in namespace %s", d.KeyPairName, d.Namespace)
+			if apierrors.IsNotFound(err) {
+				return fmt.Errorf("keypair %s doesn't exist", d.KeyPairName)
 			}
 			return err
 		}
@@ -60,7 +61,7 @@ func (d *Driver) PreCreateCheck() error {
 		// keypair validated
 		keypairValidated := false
 		for _, condition := range keypair.Status.Conditions {
-			if condition.Type == "validated" && condition.Status == "True" {
+			if condition.Type == harvsterv1.KeyPairValidated && condition.Status == corev1.ConditionTrue {
 				keypairValidated = true
 			}
 		}
@@ -73,10 +74,9 @@ func (d *Driver) PreCreateCheck() error {
 
 	// network exist
 	if d.NetworkType != networkTypePod {
-		_, err = c.Networks.Get(d.Namespace, d.NetworkName)
-		if err != nil {
-			if goharverrors.IsNotFound(err) {
-				return fmt.Errorf("network %s doesn't exist in namespace %s", d.KeyPairName, d.Namespace)
+		if _, err = d.getNetwork(); err != nil {
+			if apierrors.IsNotFound(err) {
+				return fmt.Errorf("network %s doesn't exist", d.NetworkName)
 			}
 			return err
 		}
@@ -86,51 +86,65 @@ func (d *Driver) PreCreateCheck() error {
 }
 
 func (d *Driver) Create() error {
-	c, err := d.getClient()
+	// create keypair
+	if err := d.createKeyPair(); err != nil {
+		return err
+	}
+	// create vm
+	cloudInitSource, cloudConfigSecret, err := d.buildCloudInit()
 	if err != nil {
 		return err
 	}
-
-	if err = d.createKeyPair(); err != nil {
+	imageNamespace, imageName, err := NamespacedNamePartsByDefault(d.ImageName, d.VMNamespace)
+	if err != nil {
 		return err
 	}
-
-	userData, networkData := d.createCloudInit()
-
 	dataVolumeOption := &builder.DataVolumeOption{
+		ImageID:          fmt.Sprintf("%s/%s", imageNamespace, imageName),
 		VolumeMode:       corev1.PersistentVolumeBlock,
 		AccessMode:       corev1.ReadWriteMany,
-		StorageClassName: pointer.StringPtr("longhorn-" + d.ImageName),
-		ImageID:          fmt.Sprintf("%s/%s", d.Namespace, d.ImageName),
+		StorageClassName: pointer.StringPtr(builder.BuildImageStorageClassName("", imageName)),
 	}
-
-	// create vm
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
-		Namespace(d.Namespace).Name(d.MachineName).
-		CPU(d.CPU).Memory(d.MemorySize).
-		Image(d.DiskSize, d.DiskBus, dataVolumeOption).
-		EvictionStrategy(true).
-		DefaultPodAntiAffinity().
-		CloudInit(userData, networkData)
+		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
+		DataVolumeDisk(rootDiskName, builder.DiskBusVirtio, false, 1, d.DiskSize, "", dataVolumeOption).
+		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
+		EvictionStrategy(true).DefaultPodAntiAffinity().Run(false)
 
 	if d.KeyPairName != "" {
 		vmBuilder = vmBuilder.SSHKey(d.KeyPairName)
 	}
-
-	if d.NetworkType != networkTypePod {
-		vmBuilder = vmBuilder.Bridge(d.NetworkName, d.NetworkModel)
-	} else {
-		vmBuilder = vmBuilder.ManagementNetwork(true)
+	interfaceType := builder.NetworkInterfaceTypeBridge
+	networkName := d.NetworkName
+	if d.NetworkType == networkTypePod {
+		networkName = ""
 	}
-
-	if _, err = c.VirtualMachines.Create(vmBuilder.Run()); err != nil {
+	vm, err := vmBuilder.NetworkInterface(interfaceName, d.NetworkModel, "", interfaceType, networkName).VM()
+	if err != nil {
 		return err
 	}
-
-	if err = d.waitForState(state.Running); err != nil {
+	vm.Kind = kubevirtv1.VirtualMachineGroupVersionKind.Kind
+	vm.APIVersion = kubevirtv1.GroupVersion.String()
+	createdVM, err := d.createVM(vm)
+	if err != nil {
 		return err
 	}
-	if err = d.waitForIP(); err != nil {
+	// create secret
+	if cloudConfigSecret != nil {
+		cloudConfigSecret.OwnerReferences = []metav1.OwnerReference{
+			{
+				APIVersion: vm.APIVersion,
+				Kind:       vm.Kind,
+				Name:       vm.Name,
+				UID:        createdVM.UID,
+			},
+		}
+		if _, err = d.createSecret(cloudConfigSecret); err != nil {
+			return err
+		}
+	}
+	// start vm
+	if err = d.Start(); err != nil {
 		return err
 	}
 	ip, err := d.GetIP()
