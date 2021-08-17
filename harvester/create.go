@@ -99,7 +99,7 @@ func (d *Driver) Create() error {
 	if err != nil {
 		return err
 	}
-	dataVolumeOption := &builder.DataVolumeOption{
+	pvcOption := &builder.PersistentVolumeClaimOption{
 		ImageID:          fmt.Sprintf("%s/%s", imageNamespace, imageName),
 		VolumeMode:       corev1.PersistentVolumeBlock,
 		AccessMode:       corev1.ReadWriteMany,
@@ -107,7 +107,7 @@ func (d *Driver) Create() error {
 	}
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
-		DataVolumeDisk(rootDiskName, builder.DiskBusVirtio, false, 1, d.DiskSize, "", dataVolumeOption).
+		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, 1, d.DiskSize, "", pvcOption).
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
 		EvictionStrategy(true).DefaultPodAntiAffinity().Run(false)
 
