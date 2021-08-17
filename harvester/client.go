@@ -182,7 +182,7 @@ func (d *Driver) deleteVolume(name string) error {
 	if err != nil {
 		return err
 	}
-	return c.HarvesterClient.CdiV1beta1().DataVolumes(d.VMNamespace).Delete(d.ctx, name, metav1.DeleteOptions{})
+	return c.KubeClient.CoreV1().PersistentVolumeClaims(d.VMNamespace).Delete(d.ctx, name, metav1.DeleteOptions{})
 }
 
 func (d *Driver) createVM(vm *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error) {
