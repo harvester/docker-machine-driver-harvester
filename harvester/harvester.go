@@ -106,7 +106,12 @@ func (d *Driver) GetIP() (string, error) {
 		return "", err
 	}
 
-	return strings.Split(vmi.Status.Interfaces[0].IP, "/")[0], nil
+	addr := strings.Split(vmi.Status.Interfaces[0].IP, "/")[0]
+	if ip := net.ParseIP(addr); ip == nil || ip.To4() == nil {
+		return "", fmt.Errorf("%s is not a valid IPv4 address", addr)
+	}
+
+	return addr, nil
 }
 
 func (d *Driver) GetState() (state.State, error) {
