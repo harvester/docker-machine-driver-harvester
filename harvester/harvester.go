@@ -173,10 +173,10 @@ func (d *Driver) Remove() error {
 		return err
 	}
 	for _, volume := range vm.Spec.Template.Spec.Volumes {
-		if volume.DataVolume == nil {
+		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		if err = d.deleteVolume(volume.Name); err != nil && !apierrors.IsNotFound(err) {
+		if err = d.deleteVolume(volume.PersistentVolumeClaim.ClaimName); err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 	}
