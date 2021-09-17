@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	harvesterutil "github.com/harvester/harvester/pkg/util"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/machine/libmachine/mcnutils"
@@ -169,16 +170,20 @@ func (d *Driver) Remove() error {
 		}
 		return err
 	}
-	if err = d.deleteVM(); err != nil {
-		return err
-	}
+	removedPVCs := make([]string, 0, len(vm.Spec.Template.Spec.Volumes))
 	for _, volume := range vm.Spec.Template.Spec.Volumes {
 		if volume.PersistentVolumeClaim == nil {
 			continue
 		}
-		if err = d.deleteVolume(volume.PersistentVolumeClaim.ClaimName); err != nil && !apierrors.IsNotFound(err) {
-			return err
-		}
+		removedPVCs = append(removedPVCs, volume.PersistentVolumeClaim.ClaimName)
+	}
+	vmCopy := vm.DeepCopy()
+	vmCopy.Annotations[harvesterutil.RemovedPVCsAnnotationKey] = strings.Join(removedPVCs, ",")
+	if _, err = d.updateVM(vmCopy); err != nil {
+		return err
+	}
+	if err = d.deleteVM(); err != nil {
+		return err
 	}
 	return d.waitRemoved()
 }

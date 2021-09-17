@@ -158,6 +158,14 @@ func (d *Driver) getVM() (*kubevirtv1.VirtualMachine, error) {
 	return c.HarvesterClient.KubevirtV1().VirtualMachines(d.VMNamespace).Get(d.ctx, d.MachineName, metav1.GetOptions{})
 }
 
+func (d *Driver) updateVM(newVM *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error) {
+	c, err := d.getClient()
+	if err != nil {
+		return nil, err
+	}
+	return c.HarvesterClient.KubevirtV1().VirtualMachines(d.VMNamespace).Update(d.ctx, newVM, metav1.UpdateOptions{})
+}
+
 func (d *Driver) deleteVM() error {
 	c, err := d.getClient()
 	if err != nil {
