@@ -8,7 +8,7 @@ replace (
 	github.com/docker/docker => github.com/docker/docker v1.4.2-0.20200203170920-46ec8731fbce
 	github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
-	github.com/harvester/harvester => github.com/harvester/harvester v0.0.2-0.20210817054638-94bf1714eaf0
+	github.com/harvester/harvester => github.com/harvester/harvester v0.0.2-0.20211116032603-a4ed2af58831
 
 	github.com/knative/pkg => github.com/rancher/pkg v0.0.0-20190514055449-b30ab9de040e
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
@@ -44,14 +44,14 @@ replace (
 	k8s.io/mount-utils => k8s.io/mount-utils v0.21.2
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.21.2
 
-	kubevirt.io/client-go => github.com/kubevirt/client-go v0.44.0
+	kubevirt.io/client-go => github.com/kubevirt/client-go v0.45.0
 	kubevirt.io/containerized-data-importer => github.com/rancher/kubevirt-containerized-data-importer v1.26.1-0.20210802100720-9bcf4e7ba0ce
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 )
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/harvester/harvester v0.2.0
+	github.com/harvester/harvester v0.3.0
 	github.com/imdario/mergo v0.3.12
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200331171230-d50e42f2b669
 	github.com/rancher/machine v0.15.0-rancher60
@@ -62,5 +62,5 @@ require (
 	k8s.io/apimachinery v0.21.2
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/utils v0.0.0-20210305010621-2afb4311ab10
-	kubevirt.io/client-go v0.44.0
+	kubevirt.io/client-go v0.45.0
 )
