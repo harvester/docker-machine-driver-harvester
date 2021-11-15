@@ -107,7 +107,7 @@ func (d *Driver) Create() error {
 	}
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
-		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, 1, d.DiskSize, "", pvcOption).
+		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, true, 1, d.DiskSize, "", pvcOption).
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
 		EvictionStrategy(true).DefaultPodAntiAffinity().Run(false)
 
