@@ -54,7 +54,7 @@ require (
 	github.com/harvester/harvester v0.3.0
 	github.com/imdario/mergo v0.3.12
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200331171230-d50e42f2b669
-	github.com/rancher/machine v0.15.0-rancher60
+	github.com/rancher/machine v0.15.0-rancher73
 	github.com/rancher/wrangler v0.8.1-0.20210618171953-ab479ee75244
 	golang.org/x/net v0.0.0-20210326060303-6b1517762897 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
