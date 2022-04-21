@@ -56,6 +56,7 @@ require (
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200331171230-d50e42f2b669
 	github.com/rancher/machine v0.15.0-rancher73
 	github.com/rancher/wrangler v0.8.10
+	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	k8s.io/api v0.22.3
 	k8s.io/apimachinery v0.22.3
 	k8s.io/client-go v12.0.0+incompatible
