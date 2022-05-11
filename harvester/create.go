@@ -17,7 +17,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (
@@ -109,7 +109,7 @@ func (d *Driver) Create() error {
 		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
 		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, false, 1, d.DiskSize, "", pvcOption).
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
-		EvictionStrategy(true).DefaultPodAntiAffinity().Run(false)
+		EvictionStrategy(true).DefaultPodAntiAffinity().RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
 
 	if d.KeyPairName != "" {
 		vmBuilder = vmBuilder.SSHKey(d.KeyPairName)
@@ -143,8 +143,8 @@ func (d *Driver) Create() error {
 			return err
 		}
 	}
-	// start vm
-	if err = d.Start(); err != nil {
+	// wait vm ready
+	if err = d.waitForReady(); err != nil {
 		return err
 	}
 	ip, err := d.GetIP()

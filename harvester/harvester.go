@@ -13,7 +13,7 @@ import (
 	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/state"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	kubevirtv1 "kubevirt.io/client-go/api/v1"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 const (
