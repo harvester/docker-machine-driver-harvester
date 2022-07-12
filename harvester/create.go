@@ -1,13 +1,12 @@
 package harvester
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
 	"time"
 
-	harvsterv1 "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
-	"github.com/harvester/harvester/pkg/builder"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/machine/libmachine/mcnutils"
@@ -18,6 +17,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+
+	harvsterv1 "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
+	"github.com/harvester/harvester/pkg/builder"
 )
 
 const (
@@ -109,7 +111,15 @@ func (d *Driver) Create() error {
 		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
 		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, false, 1, d.DiskSize, "", pvcOption).
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
-		EvictionStrategy(true).DefaultPodAntiAffinity().RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
+		EvictionStrategy(true).RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
+
+	var affinity *corev1.Affinity
+	if d.VMAffinity != "" {
+		if err := json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
+			return err
+		}
+	}
+	vmBuilder = vmBuilder.Affinity(affinity)
 
 	if d.KeyPairName != "" {
 		vmBuilder = vmBuilder.SSHKey(d.KeyPairName)

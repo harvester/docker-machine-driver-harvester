@@ -7,13 +7,14 @@ import (
 	"strings"
 	"time"
 
-	harvesterutil "github.com/harvester/harvester/pkg/util"
 	"github.com/rancher/machine/libmachine/drivers"
 	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/machine/libmachine/mcnutils"
 	"github.com/rancher/machine/libmachine/state"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+
+	harvesterutil "github.com/harvester/harvester/pkg/util"
 )
 
 const (
@@ -36,6 +37,7 @@ type Driver struct {
 	KubeConfigContent string
 
 	VMNamespace string
+	VMAffinity  string
 	ClusterType string
 	ClusterID   string
 
