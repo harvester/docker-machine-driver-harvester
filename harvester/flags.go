@@ -132,6 +132,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-network-data",
 			Usage:  "networkData content of cloud-init for machine, base64 is supported",
 		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_VM_AFFINITY",
+			Name:   "harvester-vm-affinity",
+			Usage:  "harvester vm affinity, base64 is supported",
+		},
 	}
 }
 
@@ -139,6 +144,7 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.KubeConfigContent = StringSupportBase64(flags.String("harvester-kubeconfig-content"))
 
 	d.VMNamespace = flags.String("harvester-vm-namespace")
+	d.VMAffinity = StringSupportBase64(flags.String("harvester-vm-affinity"))
 	d.ClusterType = flags.String("harvester-cluster-type")
 	d.ClusterID = flags.String("harvester-cluster-id")
 

@@ -9,6 +9,8 @@ replace (
 	github.com/go-kit/kit => github.com/go-kit/kit v0.3.0
 	github.com/googleapis/gnostic => github.com/googleapis/gnostic v0.4.1
 
+	github.com/harvester/harvester => github.com/harvester/harvester v0.0.2-0.20220712022404-7158c858201a
+
 	github.com/knative/pkg => github.com/rancher/pkg v0.0.0-20190514055449-b30ab9de040e
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
@@ -60,12 +62,11 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200331171230-d50e42f2b669
 	github.com/rancher/machine v0.15.0-rancher85
-	github.com/rancher/wrangler v0.8.11-0.20211214201934-f5aa5d9f2e81
+	github.com/rancher/wrangler v1.0.1-0.20220520195731-8eeded9bae2a
 	golang.org/x/crypto v0.0.0 // indirect
-	golang.org/x/tools v0.1.9 // indirect
-	k8s.io/api v0.22.3
-	k8s.io/apimachinery v0.22.3
+	k8s.io/api v0.24.0
+	k8s.io/apimachinery v0.24.0
 	k8s.io/client-go v12.0.0+incompatible
-	k8s.io/utils v0.0.0-20210819203725-bdf08cb9a70a
-	kubevirt.io/api v0.0.0-20220111180619-bd15f69822b9
+	k8s.io/utils v0.0.0-20211116205334-6203023598ed
+	kubevirt.io/api v0.0.0-20220430221853-33880526e414
 )
