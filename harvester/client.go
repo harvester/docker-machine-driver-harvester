@@ -11,6 +11,7 @@ import (
 	cniv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	"github.com/rancher/wrangler/pkg/kubeconfig"
 	corev1 "k8s.io/api/core/v1"
+	storagev1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -106,36 +107,44 @@ func (d *Driver) getSetting(name string) (*harvsterv1.Setting, error) {
 	return c.HarvesterClient.HarvesterhciV1beta1().Settings().Get(d.ctx, name, metav1.GetOptions{})
 }
 
-func (d *Driver) getImage() (*harvsterv1.VirtualMachineImage, error) {
+func (d *Driver) getImage(imageName string) (*harvsterv1.VirtualMachineImage, error) {
 	c, err := d.getClient()
 	if err != nil {
 		return nil, err
 	}
-	namespace, name, err := NamespacedNamePartsByDefault(d.ImageName, d.VMNamespace)
+	namespace, name, err := NamespacedNamePartsByDefault(imageName, d.VMNamespace)
 	if err != nil {
 		return nil, err
 	}
 	return c.HarvesterClient.HarvesterhciV1beta1().VirtualMachineImages(namespace).Get(d.ctx, name, metav1.GetOptions{})
 }
 
-func (d *Driver) getKeyPair() (*harvsterv1.KeyPair, error) {
+func (d *Driver) getStorageClass(storageClassName string) (*storagev1.StorageClass, error) {
 	c, err := d.getClient()
 	if err != nil {
 		return nil, err
 	}
-	namespace, name, err := NamespacedNamePartsByDefault(d.KeyPairName, d.VMNamespace)
+	return c.KubeClient.StorageV1().StorageClasses().Get(d.ctx, storageClassName, metav1.GetOptions{})
+}
+
+func (d *Driver) getKeyPair(keyPairName string) (*harvsterv1.KeyPair, error) {
+	c, err := d.getClient()
+	if err != nil {
+		return nil, err
+	}
+	namespace, name, err := NamespacedNamePartsByDefault(keyPairName, d.VMNamespace)
 	if err != nil {
 		return nil, err
 	}
 	return c.HarvesterClient.HarvesterhciV1beta1().KeyPairs(namespace).Get(d.ctx, name, metav1.GetOptions{})
 }
 
-func (d *Driver) getNetwork() (*cniv1.NetworkAttachmentDefinition, error) {
+func (d *Driver) getNetwork(networkName string) (*cniv1.NetworkAttachmentDefinition, error) {
 	c, err := d.getClient()
 	if err != nil {
 		return nil, err
 	}
-	namespace, name, err := NamespacedNamePartsByDefault(d.NetworkName, d.VMNamespace)
+	namespace, name, err := NamespacedNamePartsByDefault(networkName, d.VMNamespace)
 	if err != nil {
 		return nil, err
 	}

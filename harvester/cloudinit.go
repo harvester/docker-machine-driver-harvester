@@ -87,10 +87,8 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		networkData string
 	)
 	// userData
-	if d.NetworkType != networkTypePod {
-		// need qemu guest agent to get ip
-		userData += userDataAddQemuGuestAgent
-	}
+	// need qemu guest agent to get ip
+	userData = userDataAddQemuGuestAgent
 	if d.SSHPassword != "" {
 		userData += fmt.Sprintf(userDataPasswordTemplate, d.SSHUser, d.SSHPassword)
 	}
@@ -120,6 +118,7 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		userData = string(userDataByte)
 	}
 	userData = userDataHeader + userData
+	// networkData
 	if d.NetworkData != "" {
 		networkData = d.NetworkData
 	}

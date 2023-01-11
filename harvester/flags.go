@@ -2,7 +2,6 @@ package harvester
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 
 	"github.com/rancher/machine/libmachine/drivers"
@@ -14,11 +13,8 @@ const (
 
 	defaultCPU          = 2
 	defaultMemorySize   = 4
-	defaultDiskSize     = 40
 	defaultDiskBus      = "virtio"
 	defaultNetworkModel = "virtio"
-	networkTypePod      = "pod"
-	networkTypeDHCP     = "dhcp"
 )
 
 func (d *Driver) GetCreateFlags() []mcnflag.Flag {
@@ -60,18 +56,21 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			EnvVar: "HARVESTER_DISK_SIZE",
 			Name:   "harvester-disk-size",
 			Usage:  "size of disk for machine (in GiB)",
-			Value:  defaultDiskSize,
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_DISK_BUS",
 			Name:   "harvester-disk-bus",
 			Usage:  "bus of disk for machine",
-			Value:  defaultDiskBus,
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_IMAGE_NAME",
 			Name:   "harvester-image-name",
 			Usage:  "harvester image name",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_DISK_INFO",
+			Name:   "harvester-disk-info",
+			Usage:  "harvester disk info",
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_SSH_USER",
@@ -104,7 +103,6 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			EnvVar: "HARVESTER_NETWORK_TYPE",
 			Name:   "harvester-network-type",
 			Usage:  "harvester network type",
-			Value:  networkTypeDHCP,
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_NETWORK_NAME",
@@ -115,7 +113,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			EnvVar: "HARVESTER_NETWORK_MODEL",
 			Name:   "harvester-network-model",
 			Usage:  "harvester network model",
-			Value:  defaultNetworkModel,
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_NETWORK_INFO",
+			Name:   "harvester-network-info",
+			Usage:  "harvester network info",
 		},
 		mcnflag.StringFlag{
 			EnvVar: "HARVESTER_CLOUD_CONFIG",
@@ -141,19 +143,28 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 }
 
 func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
-	d.KubeConfigContent = StringSupportBase64(flags.String("harvester-kubeconfig-content"))
+	d.KubeConfigContent = stringSupportBase64(flags.String("harvester-kubeconfig-content"))
 
 	d.VMNamespace = flags.String("harvester-vm-namespace")
-	d.VMAffinity = StringSupportBase64(flags.String("harvester-vm-affinity"))
+	d.VMAffinity = stringSupportBase64(flags.String("harvester-vm-affinity"))
 	d.ClusterType = flags.String("harvester-cluster-type")
 	d.ClusterID = flags.String("harvester-cluster-id")
 
 	d.CPU = flags.Int("harvester-cpu-count")
 	d.MemorySize = fmt.Sprintf("%dGi", flags.Int("harvester-memory-size"))
-	d.DiskSize = fmt.Sprintf("%dGi", flags.Int("harvester-disk-size"))
+	d.DiskSize = flags.Int("harvester-disk-size")
 	d.DiskBus = flags.String("harvester-disk-bus")
 
 	d.ImageName = flags.String("harvester-image-name")
+
+	diskInfoStr := flags.String("harvester-disk-info")
+	if diskInfoStr != "" {
+		diskInfo, err := UnmarshalDiskInfo([]byte(diskInfoStr))
+		if err != nil {
+			return err
+		}
+		d.DiskInfo = &diskInfo
+	}
 
 	d.SSHUser = flags.String("harvester-ssh-user")
 	d.SSHPort = flags.Int("harvester-ssh-port")
@@ -167,35 +178,25 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.NetworkName = flags.String("harvester-network-name")
 	d.NetworkModel = flags.String("harvester-network-model")
 
+	networkInfoStr := flags.String("harvester-network-info")
+	if networkInfoStr != "" {
+		networkInfo, err := UnmarshalNetworkInfo([]byte(networkInfoStr))
+		if err != nil {
+			return err
+		}
+		d.NetworkInfo = &networkInfo
+	}
+
 	d.CloudConfig = flags.String("harvester-cloud-config")
-	d.UserData = StringSupportBase64(flags.String("harvester-user-data"))
-	d.NetworkData = StringSupportBase64(flags.String("harvester-network-data"))
+	d.UserData = stringSupportBase64(flags.String("harvester-user-data"))
+	d.NetworkData = stringSupportBase64(flags.String("harvester-network-data"))
 
 	d.SetSwarmConfigFromFlags(flags)
 
 	return d.checkConfig()
 }
 
-func (d *Driver) checkConfig() error {
-	if d.ImageName == "" {
-		return errors.New("must specify harvester image name")
-	}
-	if d.KeyPairName != "" && d.SSHPrivateKeyPath == "" {
-		return errors.New("must specify the ssh private key path of the harvester key pair")
-	}
-	switch d.NetworkType {
-	case networkTypePod:
-	case networkTypeDHCP:
-		if d.NetworkName == "" {
-			return errors.New("must specify harvester network name")
-		}
-	default:
-		return fmt.Errorf("unknown network type %s", d.NetworkType)
-	}
-	return nil
-}
-
-func StringSupportBase64(value string) string {
+func stringSupportBase64(value string) string {
 	if value == "" {
 		return value
 	}

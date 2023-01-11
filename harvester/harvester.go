@@ -45,10 +45,12 @@ type Driver struct {
 
 	CPU        int
 	MemorySize string
-	DiskSize   string
+	DiskSize   int
 	DiskBus    string
 
 	ImageName string
+
+	DiskInfo *DiskInfo
 
 	KeyPairName       string
 	SSHPrivateKeyPath string
@@ -61,6 +63,8 @@ type Driver struct {
 
 	NetworkName  string
 	NetworkModel string
+
+	NetworkInfo *NetworkInfo
 
 	CloudConfig string
 	UserData    string
