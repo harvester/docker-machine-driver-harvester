@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"strings"
 	"time"
 
 	"github.com/rancher/machine/libmachine/drivers"
@@ -13,79 +12,17 @@ import (
 	"github.com/rancher/machine/libmachine/ssh"
 	"github.com/rancher/machine/libmachine/state"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/pointer"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 
-	harvsterv1 "github.com/harvester/harvester/pkg/apis/harvesterhci.io/v1beta1"
 	"github.com/harvester/harvester/pkg/builder"
 )
 
 const (
-	rootDiskName  = "disk-0"
-	interfaceName = "nic-0"
+	diskNamePrefix      = "disk"
+	interfaceNamePrefix = "nic"
 )
-
-func (d *Driver) PreCreateCheck() error {
-	// server version
-	serverVersion, err := d.getSetting("server-version")
-	if err != nil {
-		return err
-	}
-	d.ServerVersion = serverVersion.Value
-	if strings.HasPrefix(d.ServerVersion, "v0.1.0") {
-		return fmt.Errorf("current harvester server version is %s, only support v0.2.0+", d.ServerVersion)
-	}
-
-	// vm doesn't exist
-	if _, err = d.getVM(); err == nil {
-		return fmt.Errorf("machine %s already exists in namespace %s", d.MachineName, d.VMNamespace)
-	}
-
-	// image exist
-	if _, err = d.getImage(); err != nil {
-		if apierrors.IsNotFound(err) {
-			return fmt.Errorf("image %s doesn't exist", d.ImageName)
-		}
-		return err
-	}
-
-	if d.KeyPairName != "" {
-		keypair, err := d.getKeyPair()
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				return fmt.Errorf("keypair %s doesn't exist", d.KeyPairName)
-			}
-			return err
-		}
-
-		// keypair validated
-		keypairValidated := false
-		for _, condition := range keypair.Status.Conditions {
-			if condition.Type == harvsterv1.KeyPairValidated && condition.Status == corev1.ConditionTrue {
-				keypairValidated = true
-			}
-		}
-		if !keypairValidated {
-			return fmt.Errorf("keypair %s is not validated", keypair.Name)
-		}
-
-		d.SSHPublicKey = keypair.Spec.PublicKey
-	}
-
-	// network exist
-	if d.NetworkType != networkTypePod {
-		if _, err = d.getNetwork(); err != nil {
-			if apierrors.IsNotFound(err) {
-				return fmt.Errorf("network %s doesn't exist", d.NetworkName)
-			}
-			return err
-		}
-	}
-
-	return err
-}
 
 func (d *Driver) Create() error {
 	// create keypair
@@ -97,39 +34,32 @@ func (d *Driver) Create() error {
 	if err != nil {
 		return err
 	}
-	imageNamespace, imageName, err := NamespacedNamePartsByDefault(d.ImageName, d.VMNamespace)
-	if err != nil {
-		return err
-	}
-	pvcOption := &builder.PersistentVolumeClaimOption{
-		ImageID:          fmt.Sprintf("%s/%s", imageNamespace, imageName),
-		VolumeMode:       corev1.PersistentVolumeBlock,
-		AccessMode:       corev1.ReadWriteMany,
-		StorageClassName: pointer.StringPtr(builder.BuildImageStorageClassName("", imageName)),
-	}
 	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
 		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
-		PVCDisk(rootDiskName, builder.DiskBusVirtio, false, false, 1, d.DiskSize, "", pvcOption).
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
 		EvictionStrategy(true).RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
 
+	// affinity
 	var affinity *corev1.Affinity
 	if d.VMAffinity != "" {
-		if err := json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
+		if err = json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
 			return err
 		}
 	}
 	vmBuilder = vmBuilder.Affinity(affinity)
-
+	// ssh key
 	if d.KeyPairName != "" {
 		vmBuilder = vmBuilder.SSHKey(d.KeyPairName)
 	}
-	interfaceType := builder.NetworkInterfaceTypeBridge
-	networkName := d.NetworkName
-	if d.NetworkType == networkTypePod {
-		networkName = ""
+	// network interfaces
+	vmBuilder = d.NetworkInterfaces(vmBuilder)
+	// disks
+	vmBuilder, err = d.Disks(vmBuilder)
+	if err != nil {
+		return err
 	}
-	vm, err := vmBuilder.NetworkInterface(interfaceName, d.NetworkModel, "", interfaceType, networkName).VM()
+	// vm
+	vm, err := vmBuilder.VM()
 	if err != nil {
 		return err
 	}
@@ -237,4 +167,86 @@ func (d *Driver) createKeyPair() error {
 	log.Debugf("Using public Key: %s", publicKeyFile)
 	d.SSHPublicKey = string(publicKey)
 	return nil
+}
+
+func (d *Driver) addDisk(vmBuilder *builder.VMBuilder, disk *Disk, diskIndex int) (*builder.VMBuilder, error) {
+	diskName := fmt.Sprintf("%s-%d", diskNamePrefix, diskIndex)
+	if disk.Bus == "" {
+		disk.Bus = defaultDiskBus
+	}
+	if disk.Type == "" {
+		disk.Type = builder.DiskTypeDisk
+	}
+	isCDRom := disk.Type == builder.DiskTypeCDRom
+	var imageID string
+	if disk.ImageName != "" {
+		imageNamespace, imageName, err := NamespacedNamePartsByDefault(disk.ImageName, d.VMNamespace)
+		if err != nil {
+			return nil, err
+		}
+		imageID = fmt.Sprintf("%s/%s", imageNamespace, imageName)
+		disk.StorageClassName = builder.BuildImageStorageClassName("", imageName)
+	}
+	pvcOption := &builder.PersistentVolumeClaimOption{
+		ImageID:          imageID,
+		StorageClassName: pointer.StringPtr(disk.StorageClassName),
+		VolumeMode:       corev1.PersistentVolumeBlock,
+		AccessMode:       corev1.ReadWriteMany,
+	}
+	return vmBuilder.PVCDisk(diskName, disk.Bus, isCDRom, disk.HotPlugAble, disk.BootOrder, fmt.Sprintf("%dGi", disk.Size), "", pvcOption), nil
+}
+
+func (d *Driver) Disks(vmBuilder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	var err error
+	if d.DiskInfo != nil {
+		for i, disk := range d.DiskInfo.Disks {
+			vmBuilder, err = d.addDisk(vmBuilder, &disk, i)
+			if err != nil {
+				return nil, err
+			}
+		}
+	} else {
+		// Compatible with older versions
+		disk := Disk{
+			ImageName:   d.ImageName,
+			Bus:         d.DiskBus,
+			Type:        builder.DiskTypeDisk,
+			Size:        d.DiskSize,
+			HotPlugAble: false,
+		}
+		vmBuilder, err = d.addDisk(vmBuilder, &disk, 1)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return vmBuilder, nil
+}
+
+func (d *Driver) AddNetworkInterface(vmBuilder *builder.VMBuilder, networkInterface *NetworkInterface, interfaceIndex int) *builder.VMBuilder {
+	interfaceName := fmt.Sprintf("%s-%d", interfaceNamePrefix, interfaceIndex)
+	if networkInterface.Type == "" {
+		networkInterface.Type = builder.NetworkInterfaceTypeBridge
+	}
+	if networkInterface.Model == "" {
+		networkInterface.Model = defaultNetworkModel
+	}
+	return vmBuilder.NetworkInterface(interfaceName, networkInterface.Model, networkInterface.MACAddress, networkInterface.Type, networkInterface.NetworkName)
+}
+
+func (d *Driver) NetworkInterfaces(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
+	if d.NetworkInfo != nil {
+		for i, networkInterface := range d.NetworkInfo.NetworkInterfaces {
+			d.AddNetworkInterface(vmBuilder, &networkInterface, i)
+		}
+	} else {
+		// Compatible with older versions
+		networkInterface := NetworkInterface{
+			NetworkName: d.NetworkName,
+			Model:       d.NetworkModel,
+			MACAddress:  "",
+			Type:        builder.NetworkInterfaceTypeBridge,
+		}
+		d.AddNetworkInterface(vmBuilder, &networkInterface, 0)
+	}
+	return vmBuilder
 }
