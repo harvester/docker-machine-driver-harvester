@@ -212,6 +212,7 @@ func (d *Driver) Disks(vmBuilder *builder.VMBuilder) (*builder.VMBuilder, error)
 			Bus:         d.DiskBus,
 			Type:        builder.DiskTypeDisk,
 			Size:        d.DiskSize,
+			BootOrder:   1,
 			HotPlugAble: false,
 		}
 		vmBuilder, err = d.addDisk(vmBuilder, &disk, 1)
