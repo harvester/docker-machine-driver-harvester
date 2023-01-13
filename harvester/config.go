@@ -139,7 +139,7 @@ func parserNetworkData(networkDataStr string) (map[string]interface{}, float64, 
 }
 
 func checkNetworkDataV1(network map[string]interface{}) error {
-	var defaultGatewayCount, nameServerCount int
+	var defaultGatewayCount, nameServerCount, dhcpAllCount int
 
 	// network.config
 	networkConfigSection, err := mustGetSection(network, "config")
@@ -164,6 +164,7 @@ func checkNetworkDataV1(network map[string]interface{}) error {
 			}
 			defaultGatewayCount += gatewayCount
 			nameServerCount += dhcpCount
+			dhcpAllCount += dhcpCount
 		case "nameserver":
 			nameServerAddressCount, err := getNameServerAddressCount(config)
 			if err != nil {
@@ -173,8 +174,12 @@ func checkNetworkDataV1(network map[string]interface{}) error {
 		}
 	}
 
-	if defaultGatewayCount != 1 {
-		return fmt.Errorf("the number of default gateway must be 1, but get: %d", defaultGatewayCount)
+	if defaultGatewayCount > 1 {
+		return fmt.Errorf("the number of default gateway cannot greater than 1, but get: %d", defaultGatewayCount)
+	}
+
+	if defaultGatewayCount == 0 && dhcpAllCount == 0 {
+		return errors.New("static gateway or dhcp is not configured")
 	}
 
 	if nameServerCount == 0 {
@@ -214,7 +219,8 @@ func getGatewayAndDHCPCount(config map[string]interface{}) (int, int, error) {
 		subnetType := subnetTypeSection.(string)
 		switch subnetType {
 		case "dhcp":
-			gatewayCount += 1
+			// dhcp not always generate a default route
+			// gatewayCount += 1
 			dhcpCount += 1
 		case "static":
 			// network.config[].subnets[].gateway

@@ -94,6 +94,25 @@ network:
 			wantErr: true,
 		},
 		{
+			name: "2 dhcp",
+			args: args{
+				networkDataStr: `
+network:
+  version: 1
+  config:
+   - type: physical
+     name: enp1s0
+     subnets:
+     - type: dhcp
+   - type: physical
+     name: enp2s0
+     subnets:
+     - type: dhcp
+`,
+			},
+			wantErr: false,
+		},
+		{
 			name: "1 dhcp and 1 static with gateway",
 			args: args{
 				networkDataStr: `
@@ -112,7 +131,7 @@ network:
        gateway: 192.168.5.1
 `,
 			},
-			wantErr: true,
+			wantErr: false,
 		},
 		{
 			name: "1 dhcp and 1 static without gateway",
