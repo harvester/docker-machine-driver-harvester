@@ -52,9 +52,10 @@ replace (
 )
 
 replace (
+	github.com/emicklei/go-restful => github.com/emicklei/go-restful v2.16.0+incompatible // fix https://avd.aquasec.com/nvd/cve-2022-1996
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.2-0.20230111100841-6914c5561119
-	// Bump golang.org/x/crypto to fix https://github.com/advisories/GHSA-8c26-wmh5-6g9v
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // fix https://github.com/advisories/GHSA-8c26-wmh5-6g9v
+	golang.org/x/net => golang.org/x/net v0.4.0 // fix https://avd.aquasec.com/nvd/cve-2022-41717
 )
 
 require (
@@ -125,9 +126,9 @@ require (
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
-	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/term v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
