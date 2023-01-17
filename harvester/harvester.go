@@ -45,7 +45,7 @@ type Driver struct {
 
 	CPU        int
 	MemorySize string
-	DiskSize   int
+	DiskSize   string
 	DiskBus    string
 
 	ImageName string
