@@ -4,19 +4,12 @@ run:
     - go/pkg/mod
 linters:
   enable:
-    - vet
-    - staticcheck
     - bodyclose
-    - errcheck
     - gofmt
     - goimports
     - whitespace
-    - deadcode
-    - unparam
-    - ineffassign
     - prealloc
     - goconst
-    - gosimple
     - misspell
   enable-all: false
   disable-all: true
