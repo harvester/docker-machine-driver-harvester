@@ -76,7 +76,7 @@ func (d *Driver) checkConfig() error {
 		if d.ImageName == "" {
 			return errors.New("must specify harvester image name")
 		}
-		if d.DiskSize <= 0 {
+		if d.DiskSize == "0" {
 			return errors.New("must specify harvester disk size")
 		}
 	}

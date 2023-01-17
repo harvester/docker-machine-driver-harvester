@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"time"
 
 	"github.com/rancher/machine/libmachine/drivers"
@@ -207,11 +208,15 @@ func (d *Driver) Disks(vmBuilder *builder.VMBuilder) (*builder.VMBuilder, error)
 		}
 	} else {
 		// Compatible with older versions
+		diskSize, err := strconv.Atoi(d.DiskSize)
+		if err != nil {
+			return nil, err
+		}
 		disk := Disk{
 			ImageName:   d.ImageName,
 			Bus:         d.DiskBus,
 			Type:        builder.DiskTypeDisk,
-			Size:        d.DiskSize,
+			Size:        diskSize,
 			BootOrder:   1,
 			HotPlugAble: false,
 		}
