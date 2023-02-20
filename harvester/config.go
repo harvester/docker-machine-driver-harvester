@@ -122,20 +122,22 @@ func parserNetworkData(networkDataStr string) (map[string]interface{}, float64, 
 	if err := yaml.Unmarshal([]byte(networkDataStr), &networkData); err != nil {
 		return nil, 0, err
 	}
-	// network
-	networkSection, err := mustGetSection(networkData, "network")
-	if err != nil {
-		return nil, 0, err
+	// root section
+	var rootSection map[string]interface{}
+	networkSection, ok := networkData["network"]
+	if ok {
+		rootSection = networkSection.(map[string]interface{})
+	} else {
+		rootSection = networkData
 	}
-	network := networkSection.(map[string]interface{})
 
 	// network.version
-	versionSection, err := mustGetSection(network, "version")
+	versionSection, err := mustGetSection(rootSection, "version")
 	if err != nil {
-		return network, 0, err
+		return rootSection, 0, err
 	}
 	version := versionSection.(float64)
-	return network, version, nil
+	return rootSection, version, nil
 }
 
 func checkNetworkDataV1(network map[string]interface{}) error {
