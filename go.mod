@@ -55,7 +55,7 @@ replace (
 	github.com/emicklei/go-restful => github.com/emicklei/go-restful v2.16.0+incompatible // fix https://avd.aquasec.com/nvd/cve-2022-1996
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.2-0.20230111100841-6914c5561119
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // fix https://github.com/advisories/GHSA-8c26-wmh5-6g9v
-	golang.org/x/net => golang.org/x/net v0.4.0 // fix https://avd.aquasec.com/nvd/cve-2022-41717
+	golang.org/x/net => golang.org/x/net v0.7.0 // fix https://avd.aquasec.com/nvd/cve-2022-41723
 )
 
 require (
@@ -64,7 +64,7 @@ require (
 	github.com/imdario/mergo v0.3.12
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200331171230-d50e42f2b669
 	github.com/rancher/machine v0.15.0-rancher98
-	github.com/rancher/wrangler v1.0.1-0.20220520195731-8eeded9bae2a
+	github.com/rancher/wrangler v1.0.1
 	k8s.io/api v0.24.0
 	k8s.io/apimachinery v0.24.0
 	k8s.io/client-go v12.0.0+incompatible
@@ -126,10 +126,10 @@ require (
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
-	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
@@ -145,7 +145,7 @@ require (
 	kubevirt.io/kubevirt v0.54.0 // indirect
 	sigs.k8s.io/cluster-api v0.4.4 // indirect
 	sigs.k8s.io/controller-runtime v0.11.2 // indirect
-	sigs.k8s.io/json v0.0.0-20211020170558-c049b76a60c6 // indirect
+	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
