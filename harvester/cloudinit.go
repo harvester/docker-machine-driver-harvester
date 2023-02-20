@@ -87,8 +87,6 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		networkData string
 	)
 	// userData
-	// need qemu guest agent to get ip
-	userData = userDataAddQemuGuestAgent
 	if d.SSHPassword != "" {
 		userData += fmt.Sprintf(userDataPasswordTemplate, d.SSHUser, d.SSHPassword)
 	}
