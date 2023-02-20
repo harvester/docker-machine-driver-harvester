@@ -21,6 +21,20 @@ func TestCheckNetworkData(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "without network section key",
+			args: args{
+				networkDataStr: `
+version: 1
+config:
+- type: physical
+  name: enp1s0
+  subnets:
+  - type: dhcp
+`,
+			},
+			wantErr: false,
+		},
+		{
 			name: "1 dhcp",
 			args: args{
 				networkDataStr: `
