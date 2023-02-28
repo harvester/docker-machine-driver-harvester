@@ -178,7 +178,7 @@ func (d *Driver) Remove() error {
 	}
 	removedPVCs := make([]string, 0, len(vm.Spec.Template.Spec.Volumes))
 	for _, volume := range vm.Spec.Template.Spec.Volumes {
-		if volume.PersistentVolumeClaim == nil {
+		if volume.PersistentVolumeClaim == nil || volume.PersistentVolumeClaim.Hotpluggable {
 			continue
 		}
 		removedPVCs = append(removedPVCs, volume.PersistentVolumeClaim.ClaimName)
