@@ -3,6 +3,7 @@ package harvester
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/harvester/harvester/pkg/builder"
@@ -13,6 +14,8 @@ import (
 
 const (
 	userDataHeader = `#cloud-config
+`
+	userDataHeaderTemplateJinja = `## template: jinja
 `
 	userDataAddQemuGuestAgent = `
 package_update: true
@@ -118,6 +121,9 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		userData = string(userDataByte)
 	}
 	userData = userDataHeader + userData
+	if strings.HasPrefix(d.UserData, userDataHeaderTemplateJinja) {
+		userData = userDataHeaderTemplateJinja + userData
+	}
 	// networkData
 	if d.NetworkData != "" {
 		networkData = d.NetworkData
