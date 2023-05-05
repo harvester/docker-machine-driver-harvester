@@ -100,19 +100,19 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 			userData += fmt.Sprintf(userDataSSHKeyTemplate, d.SSHPublicKey)
 		}
 	}
+	if d.UserData != "" {
+		userDataByte, err := mergeYaml([]byte(userData), []byte(d.UserData))
+		if err != nil {
+			return "", "", err
+		}
+		userData = string(userDataByte)
+	}
 	if d.CloudConfig != "" {
 		cloudConfigContent, err := ioutil.ReadFile(d.CloudConfig)
 		if err != nil {
 			return "", "", err
 		}
 		userDataByte, err := mergeYaml([]byte(userData), cloudConfigContent)
-		if err != nil {
-			return "", "", err
-		}
-		userData = string(userDataByte)
-	}
-	if d.UserData != "" {
-		userDataByte, err := mergeYaml([]byte(userData), []byte(d.UserData))
 		if err != nil {
 			return "", "", err
 		}
