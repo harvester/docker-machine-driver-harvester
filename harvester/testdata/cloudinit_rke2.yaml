@@ -1,0 +1,2 @@
+runcmd:
+- sh /usr/local/custom_script/install.sh
