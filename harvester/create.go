@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rancher/machine/libmachine/drivers"
@@ -23,6 +24,7 @@ import (
 const (
 	diskNamePrefix      = "disk"
 	interfaceNamePrefix = "nic"
+	poolNameLabelKey    = "harvesterhci.io/machineSetName"
 )
 
 func (d *Driver) Create() error {
@@ -45,6 +47,31 @@ func (d *Driver) Create() error {
 	if d.VMAffinity != "" {
 		if err = json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
 			return err
+		}
+		//VM naming convention is of form: clusterName-poolName-generatedString
+		//we can reverse split this to identify unique machinesets name, to label nodes
+		//with this unique machine set. This can then be used for populating affinity rules
+		machineSetSplit := strings.Split(d.MachineName, "-")
+		machineSetName := strings.Join(machineSetSplit[:len(machineSetSplit)-1], "-")
+		vmBuilder = vmBuilder.Labels(map[string]string{poolNameLabelKey: machineSetName})
+		addtionalPodAffinityTerm := corev1.PodAffinityTerm{
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					poolNameLabelKey: machineSetName,
+				},
+			},
+			TopologyKey: "kubernetes.io/hostname",
+		}
+		additionalWeightPodAffinity := corev1.WeightedPodAffinityTerm{
+			Weight:          1,
+			PodAffinityTerm: addtionalPodAffinityTerm,
+		}
+		if affinity.PodAffinity != nil {
+			affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
+		}
+
+		if affinity.PodAntiAffinity != nil {
+			affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
 		}
 	}
 	vmBuilder = vmBuilder.Affinity(affinity)
