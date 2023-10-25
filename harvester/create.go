@@ -52,7 +52,8 @@ func (d *Driver) Create() error {
 		//we can reverse split this to identify unique machinesets name, to label nodes
 		//with this unique machine set. This can then be used for populating affinity rules
 		machineSetSplit := strings.Split(d.MachineName, "-")
-		machineSetName := strings.Join(machineSetSplit[:len(machineSetSplit)-1], "-")
+		machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
+		machineSetName := strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-")
 		vmBuilder = vmBuilder.Labels(map[string]string{poolNameLabelKey: machineSetName})
 		addtionalPodAffinityTerm := corev1.PodAffinityTerm{
 			LabelSelector: &metav1.LabelSelector{
