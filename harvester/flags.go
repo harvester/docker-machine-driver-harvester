@@ -150,6 +150,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-enable-secure-boot",
 			Usage:  "enable vm secure boot, only works when enable efi",
 		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_VGPU_INFO",
+			Name:   "harvester-vgpu-info",
+			Usage:  "harvester-vgpu-info",
+		},
 	}
 }
 
@@ -210,6 +215,14 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 
 	d.SetSwarmConfigFromFlags(flags)
 
+	vGPUInfoString := flags.String("harvester-vgpu-info")
+	if vGPUInfoString != "" {
+		vGPUInfo, err := parseVGPUInfo(vGPUInfoString)
+		if err != nil {
+			return err
+		}
+		d.VGPUInfo = vGPUInfo
+	}
 	return d.checkConfig()
 }
 

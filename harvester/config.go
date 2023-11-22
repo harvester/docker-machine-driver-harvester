@@ -58,6 +58,15 @@ type NetworkInterface struct {
 	Type  string `json:"type"`
 }
 
+type VGPUInfo struct {
+	VGPURequests []VGPURequest `json:"vGPU"`
+}
+
+type VGPURequest struct {
+	Name       string `json:"name"`
+	DeviceName string `json:"deviceName"`
+}
+
 func (d *Driver) checkConfig() error {
 	if d.KeyPairName != "" && d.SSHPrivateKeyPath == "" {
 		return errors.New("must specify the ssh private key path of the harvester key pair")
@@ -244,4 +253,13 @@ func mustGetSection(m map[string]interface{}, k string) (interface{}, error) {
 		return nil, fmt.Errorf("missing section: %s", k)
 	}
 	return section, nil
+}
+
+func parseVGPUInfo(vGPUInfo string) (*VGPUInfo, error) {
+	v := &VGPUInfo{}
+	err := json.Unmarshal([]byte(vGPUInfo), v)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling vgpuInfo string")
+	}
+	return v, nil
 }

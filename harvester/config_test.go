@@ -2,6 +2,8 @@ package harvester
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCheckNetworkData(t *testing.T) {
@@ -249,4 +251,23 @@ network:
 			}
 		})
 	}
+}
+
+func Test_parseVGPUInfo(t *testing.T) {
+	vObj := &VGPUInfo{
+		VGPURequests: []VGPURequest{
+			{
+				DeviceName: "nvidia.com/NVIDIA_A2-2Q",
+			},
+			{
+				DeviceName: "nvidia.com/NVIDIA_A2-1Q",
+			},
+		},
+	}
+	vgpuInfoString := `{"vGPU":[{"name":"","deviceName":"nvidia.com/NVIDIA_A2-2Q"},{"name":"","deviceName":"nvidia.com/NVIDIA_A2-1Q"}]}`
+	assert := require.New(t)
+	v, err := parseVGPUInfo(vgpuInfoString)
+	assert.NoError(err)
+	assert.Equal(v, vObj, "expected request to match predefined object")
+
 }
