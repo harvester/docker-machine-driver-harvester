@@ -82,6 +82,9 @@ func (d *Driver) Create() error {
 	}
 	// network interfaces
 	vmBuilder = d.NetworkInterfaces(vmBuilder)
+
+	// add vGPU info
+	vmBuilder = d.ConfigureVGPU(vmBuilder)
 	// disks
 	vmBuilder, err = d.Disks(vmBuilder)
 	if err != nil {
@@ -286,6 +289,19 @@ func (d *Driver) NetworkInterfaces(vmBuilder *builder.VMBuilder) *builder.VMBuil
 			Type:        builder.NetworkInterfaceTypeBridge,
 		}
 		d.AddNetworkInterface(vmBuilder, &networkInterface, 0)
+	}
+	return vmBuilder
+}
+
+// ConfigureVGPU will configure vmBuilder with vGPUInfo passed through driver
+func (d *Driver) ConfigureVGPU(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
+	if d.VGPUInfo == nil {
+		return vmBuilder
+	}
+
+	for _, v := range d.VGPUInfo.VGPURequests {
+		// pass name, deviceName, tags(if any), and vGPUOptions if any
+		vmBuilder = vmBuilder.GPU(v.Name, v.DeviceName, "", nil)
 	}
 	return vmBuilder
 }
