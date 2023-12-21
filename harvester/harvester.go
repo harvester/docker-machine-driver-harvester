@@ -69,6 +69,9 @@ type Driver struct {
 	CloudConfig string
 	UserData    string
 	NetworkData string
+
+	EnableEFI        bool
+	EnableSecureBoot bool
 }
 
 func NewDriver(hostName, storePath string) *Driver {

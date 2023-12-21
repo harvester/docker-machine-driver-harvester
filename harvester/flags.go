@@ -140,6 +140,16 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-vm-affinity",
 			Usage:  "harvester vm affinity, base64 is supported",
 		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_ENABLE_EFI",
+			Name:   "harvester-enable-efi",
+			Usage:  "enable vm efi",
+		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_ENABLE_SECURE_BOOT",
+			Name:   "harvester-enable-secure-boot",
+			Usage:  "enable vm secure boot, only works when enable efi",
+		},
 	}
 }
 
@@ -191,6 +201,12 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.CloudConfig = flags.String("harvester-cloud-config")
 	d.UserData = stringSupportBase64(flags.String("harvester-user-data"))
 	d.NetworkData = stringSupportBase64(flags.String("harvester-network-data"))
+
+	d.EnableEFI = flags.Bool("harvester-enable-efi")
+	d.EnableSecureBoot = flags.Bool("harvester-enable-secure-boot")
+	if d.EnableSecureBoot && !d.EnableEFI {
+		return fmt.Errorf("enable secure boot requires enable EFI")
+	}
 
 	d.SetSwarmConfigFromFlags(flags)
 
