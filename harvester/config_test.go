@@ -269,5 +269,4 @@ func Test_parseVGPUInfo(t *testing.T) {
 	v, err := parseVGPUInfo(vgpuInfoString)
 	assert.NoError(err)
 	assert.Equal(v, vObj, "expected request to match predefined object")
-
 }
