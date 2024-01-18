@@ -59,7 +59,7 @@ type NetworkInterface struct {
 }
 
 type VGPUInfo struct {
-	VGPURequests []VGPURequest `json:"vGPU"`
+	VGPURequests []VGPURequest `json:"vGPURequests"`
 }
 
 type VGPURequest struct {
