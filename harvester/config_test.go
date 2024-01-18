@@ -264,7 +264,7 @@ func Test_parseVGPUInfo(t *testing.T) {
 			},
 		},
 	}
-	vgpuInfoString := `{"vGPU":[{"name":"","deviceName":"nvidia.com/NVIDIA_A2-2Q"},{"name":"","deviceName":"nvidia.com/NVIDIA_A2-1Q"}]}`
+	vgpuInfoString := `{"vGPURequests":[{"name":"","deviceName":"nvidia.com/NVIDIA_A2-2Q"},{"name":"","deviceName":"nvidia.com/NVIDIA_A2-1Q"}]}`
 	assert := require.New(t)
 	v, err := parseVGPUInfo(vgpuInfoString)
 	assert.NoError(err)
