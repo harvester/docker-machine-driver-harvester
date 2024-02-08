@@ -5,7 +5,7 @@ go 1.20
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
 	github.com/docker/distribution => github.com/docker/distribution v2.8.0+incompatible // oras dep requires a replace is set
-	github.com/docker/docker => github.com/docker/docker v20.10.9+incompatible // oras dep requires a replace is set
+	github.com/docker/docker => github.com/docker/docker v20.10.27+incompatible // oras dep requires a replace is set
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.7
 	github.com/knative/pkg => github.com/rancher/pkg v0.0.0-20190514055449-b30ab9de040e
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
@@ -140,13 +140,13 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.14.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.13.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
-	golang.org/x/term v0.13.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/term v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
