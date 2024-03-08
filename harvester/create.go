@@ -99,7 +99,11 @@ func (d *Driver) Create() error {
 	vm.APIVersion = kubevirtv1.GroupVersion.String()
 
 	if d.EnableEFI {
+		if vm.Spec.Template.Spec.Domain.Features == nil {
+			vm.Spec.Template.Spec.Domain.Features = &kubevirtv1.Features{}
+		}
 		v := d.EnableSecureBoot
+		vm.Spec.Template.Spec.Domain.Features.SMM = &kubevirtv1.FeatureState{Enabled: &v}
 		vm.Spec.Template.Spec.Domain.Firmware = &kubevirtv1.Firmware{Bootloader: &kubevirtv1.Bootloader{EFI: &kubevirtv1.EFI{SecureBoot: &v}}}
 	}
 	createdVM, err := d.createVM(vm)
