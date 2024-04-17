@@ -225,8 +225,12 @@ func (d *Driver) addDisk(vmBuilder *builder.VMBuilder, disk *Disk, diskIndex int
 		if err != nil {
 			return nil, err
 		}
+		vmimage, err := d.client.HarvesterClient.HarvesterhciV1beta1().VirtualMachineImages(imageNamespace).Get(d.ctx, imageName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 		imageID = fmt.Sprintf("%s/%s", imageNamespace, imageName)
-		disk.StorageClassName = builder.BuildImageStorageClassName("", imageName)
+		disk.StorageClassName = vmimage.Status.StorageClassName
 	}
 	pvcOption := &builder.PersistentVolumeClaimOption{
 		ImageID:          imageID,
