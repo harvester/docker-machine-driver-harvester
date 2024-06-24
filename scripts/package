@@ -6,4 +6,10 @@ source $(dirname $0)/version
 cd $(dirname $0)/..
 
 mkdir -p dist/artifacts
-tar -zcvf dist/artifacts/docker-machine-driver-harvester${SUFFIX}.tar.gz -C bin docker-machine-driver-harvester
+
+for arch in amd64 arm64
+do
+  cp  bin/docker-machine-driver-harvester-${arch} bin/docker-machine-driver-harvester
+  tar -zcvf dist/artifacts/docker-machine-driver-harvester-${arch}.tar.gz -C bin docker-machine-driver-harvester
+done
+rm bin/docker-machine-driver-harvester
