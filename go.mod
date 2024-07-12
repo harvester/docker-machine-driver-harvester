@@ -1,6 +1,6 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.21
+go 1.22
 
 replace (
 	github.com/containerd/containerd => github.com/containerd/containerd v1.6.18
