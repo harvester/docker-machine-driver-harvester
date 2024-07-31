@@ -2,10 +2,13 @@ package harvester
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/rancher/machine/libmachine/drivers"
+	rpcdriver "github.com/rancher/machine/libmachine/drivers/rpc"
 	"github.com/rancher/machine/libmachine/mcnflag"
 )
 
@@ -156,6 +159,30 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "harvester-vgpu-info",
 		},
 	}
+}
+
+func (d *Driver) UnmarshalJSON(data []byte) error {
+	// use type alias to prevent recursively calling UnmarshalJSON
+	type targetDriver Driver
+
+	// copy data from existing driver
+	target := targetDriver(*d)
+
+	if err := json.Unmarshal(data, &target); err != nil {
+		return fmt.Errorf("error unmarshalling driver config JSON: %w", err)
+	}
+
+	*d = Driver(target)
+
+	// make sure to reload values that are subject to change from environment or
+	// os.Args
+	driverOpts := rpcdriver.GetDriverOpts(d.GetCreateFlags(), os.Args)
+
+	if _, ok := driverOpts.Values["harvester-kubeconfig-content"]; ok {
+		d.KubeConfigContent = stringSupportBase64(driverOpts.String("harvester-kubeconfig-content"))
+	}
+
+	return nil
 }
 
 func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
