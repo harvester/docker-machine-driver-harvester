@@ -73,6 +73,9 @@ type Driver struct {
 	EnableEFI        bool
 	EnableSecureBoot bool
 	VGPUInfo         *VGPUInfo
+
+	CPUPinning            bool
+	IsolateEmulatorThread bool
 }
 
 func NewDriver(hostName, storePath string) *Driver {

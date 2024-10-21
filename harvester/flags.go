@@ -158,6 +158,16 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-vgpu-info",
 			Usage:  "harvester-vgpu-info",
 		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_CPU_PINNING",
+			Name:   "harvester-cpu-pinning",
+			Usage:  "enable vm cpu pinning, make sure the the harvester cluster enable cpu manager in at least one node",
+		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_ISOLATE_EMULATOR_THREAD",
+			Name:   "harvester-isolate-emulator-thread",
+			Usage:  "enable vm isolatate emulator thread, note that enabling this feature will acquire one more cpu",
+		},
 	}
 }
 
@@ -250,6 +260,10 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 		}
 		d.VGPUInfo = vGPUInfo
 	}
+
+	d.CPUPinning = flags.Bool("harvester-cpu-pinning")
+	d.IsolateEmulatorThread = flags.Bool("harvester-isolate-emulator-thread")
+
 	return d.checkConfig()
 }
 
