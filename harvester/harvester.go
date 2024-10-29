@@ -23,6 +23,8 @@ const (
 	actionStart   = "start"
 	actionStop    = "stop"
 	actionRestart = "restart"
+
+	removeAllPVCsAnnotationKey = "harvesterhci.io/removeAllPersistentVolumeClaims"
 )
 
 // Driver is the driver used when no driver is selected. It is used to
@@ -180,9 +182,16 @@ func (d *Driver) Remove() error {
 		}
 		return err
 	}
+
+	removeAll := false
+	if value, ok := vm.Annotations[removeAllPVCsAnnotationKey]; ok && value == "true" {
+		log.Debugf("Force the removal of all persistent volume claims")
+		removeAll = true
+	}
+
 	removedPVCs := make([]string, 0, len(vm.Spec.Template.Spec.Volumes))
 	for _, volume := range vm.Spec.Template.Spec.Volumes {
-		if volume.PersistentVolumeClaim == nil || volume.PersistentVolumeClaim.Hotpluggable {
+		if volume.PersistentVolumeClaim == nil || (!removeAll && volume.PersistentVolumeClaim.Hotpluggable) {
 			continue
 		}
 		removedPVCs = append(removedPVCs, volume.PersistentVolumeClaim.ClaimName)
