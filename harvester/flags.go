@@ -161,12 +161,12 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 		mcnflag.BoolFlag{
 			EnvVar: "HARVESTER_CPU_PINNING",
 			Name:   "harvester-cpu-pinning",
-			Usage:  "enable vm cpu pinning, make sure the the harvester cluster enable cpu manager in at least one node",
+			Usage:  "enable vm cpu pinning, please ensure the harvester cluster has cpu manager enabled in at least one node",
 		},
 		mcnflag.BoolFlag{
 			EnvVar: "HARVESTER_ISOLATE_EMULATOR_THREAD",
 			Name:   "harvester-isolate-emulator-thread",
-			Usage:  "enable vm isolatate emulator thread, note that enabling this feature will acquire one more cpu",
+			Usage:  "enable vm isolatated emulator thread",
 		},
 	}
 }
