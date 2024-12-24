@@ -106,6 +106,10 @@ func (d *Driver) Create() error {
 		vm.Spec.Template.Spec.Domain.Features.SMM = &kubevirtv1.FeatureState{Enabled: &v}
 		vm.Spec.Template.Spec.Domain.Firmware = &kubevirtv1.Firmware{Bootloader: &kubevirtv1.Bootloader{EFI: &kubevirtv1.EFI{SecureBoot: &v}}}
 	}
+
+	vm.Spec.Template.Spec.Domain.CPU.DedicatedCPUPlacement = d.CPUPinning
+	vm.Spec.Template.Spec.Domain.CPU.IsolateEmulatorThread = d.IsolateEmulatorThread
+
 	createdVM, err := d.createVM(vm)
 	if err != nil {
 		return err
