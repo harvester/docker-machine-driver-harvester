@@ -1,6 +1,6 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.22.5
+go 1.23.4
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v1.4.2-0.20170731201646-1009e6a40b29 // oras dep requires a replace is set
