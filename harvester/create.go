@@ -53,9 +53,12 @@ func (d *Driver) Create() error {
 		//with this unique machine set. This can then be used for populating affinity rules
 		machineSetSplit := strings.Split(d.MachineName, "-")
 		machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
-		machineSetName := strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-")
+		machineSetName, err := formatLabelValue(strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-"))
+		if err != nil {
+			return err
+		}
 		vmBuilder = vmBuilder.Labels(map[string]string{poolNameLabelKey: machineSetName})
-		addtionalPodAffinityTerm := corev1.PodAffinityTerm{
+		additionalPodAffinityTerm := corev1.PodAffinityTerm{
 			LabelSelector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					poolNameLabelKey: machineSetName,
@@ -65,7 +68,7 @@ func (d *Driver) Create() error {
 		}
 		additionalWeightPodAffinity := corev1.WeightedPodAffinityTerm{
 			Weight:          1,
-			PodAffinityTerm: addtionalPodAffinityTerm,
+			PodAffinityTerm: additionalPodAffinityTerm,
 		}
 		if affinity.PodAffinity != nil {
 			affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
