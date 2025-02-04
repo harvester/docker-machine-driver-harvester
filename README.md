@@ -1,9 +1,8 @@
 docker-machine-driver-harvester
 ========
-[![Build Status](https://drone-publish.rancher.io/api/badges/harvester/docker-machine-driver-harvester/status.svg)](https://drone-publish.rancher.io/harvester/docker-machine-driver-harvester)
+[![Build Status](https://github.com/harvester/docker-machine-driver-harvester/actions/workflows/release.yml/badge.svg)](https://github.com/harvester/docker-machine-driver-harvester/actions)
 
 The [Harvester](https://github.com/harvester/harvester) machine driver for Docker.
-
 
 ## Development
 
