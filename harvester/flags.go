@@ -168,6 +168,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-isolate-emulator-thread",
 			Usage:  "enable vm isolatated emulator thread",
 		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_ENABLE_TPM",
+			Name:   "harvester-enable-tpm",
+			Usage:  "enable vm TPM",
+		},
 	}
 }
 
@@ -264,6 +269,7 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.CPUPinning = flags.Bool("harvester-cpu-pinning")
 	d.IsolateEmulatorThread = flags.Bool("harvester-isolate-emulator-thread")
 
+	d.EnableTPM = flags.Bool("harvester-enable-tpm")
 	return d.checkConfig()
 }
 
