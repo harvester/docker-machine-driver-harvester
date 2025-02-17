@@ -93,6 +93,12 @@ func (d *Driver) Create() error {
 	if err != nil {
 		return err
 	}
+
+	// tpm
+	if d.EnableTPM {
+		vmBuilder = vmBuilder.TPM()
+	}
+
 	// vm
 	vm, err := vmBuilder.VM()
 	if err != nil {

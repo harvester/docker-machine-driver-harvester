@@ -78,6 +78,8 @@ type Driver struct {
 
 	CPUPinning            bool
 	IsolateEmulatorThread bool
+
+	EnableTPM bool
 }
 
 func NewDriver(hostName, storePath string) *Driver {
