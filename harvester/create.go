@@ -26,7 +26,7 @@ const (
 	diskNamePrefix      = "disk"
 	interfaceNamePrefix = "nic"
 	poolNameLabelKey    = "harvesterhci.io/machineSetName"
-	clusterNameLabelKey = "cluster.kubernetes.io/name"
+	clusterNameLabelKey = "guestcluster.harvesterhci.io/name"
 )
 
 func (d *Driver) Create() error {
