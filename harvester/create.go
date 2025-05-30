@@ -23,10 +23,11 @@ import (
 )
 
 const (
-	diskNamePrefix      = "disk"
-	interfaceNamePrefix = "nic"
-	poolNameLabelKey    = "harvesterhci.io/machineSetName"
-	clusterNameLabelKey = "guestcluster.harvesterhci.io/name"
+	diskNamePrefix         = "disk"
+	interfaceNamePrefix    = "nic"
+	machineSetNameLabelKey = "harvesterhci.io/machineSetName"
+	clusterNameLabelKey    = "guestcluster.harvesterhci.io/name"
+	poolNameLabelKey       = "nodepool.harvesterhci.io/name"
 )
 
 func (d *Driver) Create() error {
@@ -44,9 +45,30 @@ func (d *Driver) Create() error {
 		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
 		EvictionStrategy(true).RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
 
+	// VM naming convention is of form: clusterName-poolName-generatedString
+	// we can reverse split this to identify unique machinesets name, to label nodes
+	// with this unique machine set. This can then be used for populating affinity rules
+	// This label will take the form `namespace-clustername-poolname`
+	machineSetSplit := strings.Split(d.MachineName, "-")
+	machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
+	machineSetName, err := formatLabelValue(strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-"))
+	if err != nil {
+		return err
+	}
+	vmBuilder.Labels(labels.Set{
+		machineSetNameLabelKey: machineSetName,
+	})
+
 	if d.ClusterName != "" {
+		// figure out the node pool name from the VM name by trimming off the
+		// generated string at the end and the cluster name at the beginning
+		nodePoolName := d.MachineName[:strings.LastIndex(d.MachineName, "-")]
+		nodePoolName = strings.TrimPrefix(nodePoolName, d.ClusterName)
+		nodePoolName = strings.TrimLeft(nodePoolName, "-")
+
 		vmBuilder.Labels(labels.Set{
 			clusterNameLabelKey: d.ClusterName,
+			poolNameLabelKey:    nodePoolName,
 		})
 	}
 
@@ -56,20 +78,10 @@ func (d *Driver) Create() error {
 		if err = json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
 			return err
 		}
-		//VM naming convention is of form: clusterName-poolName-generatedString
-		//we can reverse split this to identify unique machinesets name, to label nodes
-		//with this unique machine set. This can then be used for populating affinity rules
-		machineSetSplit := strings.Split(d.MachineName, "-")
-		machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
-		machineSetName, err := formatLabelValue(strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-"))
-		if err != nil {
-			return err
-		}
-		vmBuilder = vmBuilder.Labels(map[string]string{poolNameLabelKey: machineSetName})
 		additionalPodAffinityTerm := corev1.PodAffinityTerm{
 			LabelSelector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					poolNameLabelKey: machineSetName,
+					machineSetNameLabelKey: machineSetName,
 				},
 			},
 			TopologyKey: "kubernetes.io/hostname",
