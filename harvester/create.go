@@ -23,11 +23,12 @@ import (
 )
 
 const (
-	diskNamePrefix         = "disk"
-	interfaceNamePrefix    = "nic"
-	machineSetNameLabelKey = "harvesterhci.io/machineSetName"
-	clusterNameLabelKey    = "guestcluster.harvesterhci.io/name"
-	poolNameLabelKey       = "nodepool.harvesterhci.io/name"
+	diskNamePrefix              = "disk"
+	interfaceNamePrefix         = "nic"
+	machineSetNameLabelKey      = "harvesterhci.io/machineSetName"
+	clusterNameLabelKey         = "guestcluster.harvesterhci.io/name"
+	poolNameLabelKey            = "nodepool.harvesterhci.io/name"
+	reservedMemoryAnnotationKey = "harvesterhci.io/reservedMemory"
 )
 
 func (d *Driver) Create() error {
@@ -70,6 +71,10 @@ func (d *Driver) Create() error {
 			clusterNameLabelKey: d.ClusterName,
 			poolNameLabelKey:    nodePoolName,
 		})
+	}
+
+	if d.ReservedMemorySize != "" {
+		vmBuilder = vmBuilder.Annotations(map[string]string{reservedMemoryAnnotationKey: d.ReservedMemorySize})
 	}
 
 	// affinity

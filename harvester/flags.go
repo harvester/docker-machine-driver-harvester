@@ -15,10 +15,11 @@ import (
 const (
 	defaultNamespace = "default"
 
-	defaultCPU          = 2
-	defaultMemorySize   = 4
-	defaultDiskBus      = "virtio"
-	defaultNetworkModel = "virtio"
+	defaultCPU                = 2
+	defaultMemorySize         = 4
+	defaultReservedMemorySize = -1 // -1 means no input
+	defaultDiskBus            = "virtio"
+	defaultNetworkModel       = "virtio"
 )
 
 func (d *Driver) GetCreateFlags() []mcnflag.Flag {
@@ -178,6 +179,12 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-enable-tpm",
 			Usage:  "enable vm TPM",
 		},
+		mcnflag.IntFlag{
+			EnvVar: "HARVESTER_RESERVED_MEMORY_SIZE",
+			Name:   "harvester-reserved-memory-size",
+			Usage:  "size of reserved memory for machine (in MiB, integer value)",
+			Value:  defaultReservedMemorySize,
+		},
 	}
 }
 
@@ -216,6 +223,10 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 
 	d.CPU = flags.Int("harvester-cpu-count")
 	d.MemorySize = fmt.Sprintf("%dGi", flags.Int("harvester-memory-size"))
+	if flags.Int("harvester-reserved-memory-size") > 0 {
+		d.ReservedMemorySize = fmt.Sprintf("%dMi", flags.Int("harvester-reserved-memory-size"))
+	}
+
 	d.DiskSize = strconv.Itoa(flags.Int("harvester-disk-size"))
 	d.DiskBus = flags.String("harvester-disk-bus")
 
