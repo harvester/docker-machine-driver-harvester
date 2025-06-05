@@ -46,10 +46,11 @@ type Driver struct {
 
 	ServerVersion string
 
-	CPU        int
-	MemorySize string
-	DiskSize   string
-	DiskBus    string
+	CPU                int
+	MemorySize         string
+	ReservedMemorySize string
+	DiskSize           string
+	DiskBus            string
 
 	ImageName string
 
