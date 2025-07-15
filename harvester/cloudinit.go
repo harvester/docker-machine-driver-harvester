@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"dario.cat/mergo"
 	"github.com/ghodss/yaml"
 	"github.com/harvester/harvester/pkg/builder"
-	"github.com/imdario/mergo"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

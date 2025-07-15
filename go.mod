@@ -1,6 +1,6 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.23.4
+go 1.24.2
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v1.4.2-0.20170731201646-1009e6a40b29 // oras dep requires a replace is set
@@ -17,10 +17,20 @@ replace (
 	k8s.io/apimachinery => k8s.io/apimachinery v0.30.3
 	k8s.io/apiserver => k8s.io/apiserver v0.30.3
 	k8s.io/client-go => k8s.io/client-go v0.30.3
+	k8s.io/cloud-provider => k8s.io/cloud-provider v0.30.3
 	k8s.io/component-base => k8s.io/component-base v0.30.3
+	k8s.io/cri-api => k8s.io/cri-api v0.30.3
+	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.30.3
+	k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.30.3
+	k8s.io/endpointslice => k8s.io/endpointslice v0.30.0
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.30.3
+	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.30.3
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
+	k8s.io/kube-proxy => k8s.io/kube-proxy v0.30.3
+	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.30.3
 	k8s.io/kubernetes => k8s.io/kubernetes v1.30.3
+	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.30.3
+	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.30.3
 
 	kubevirt.io/api => github.com/kubevirt/api v1.3.0
 	kubevirt.io/client-go => github.com/kubevirt/client-go v1.3.0
@@ -30,9 +40,9 @@ replace (
 )
 
 require (
+	dario.cat/mergo v1.0.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/harvester/harvester v1.3.0
-	github.com/imdario/mergo v0.3.16
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.3.0
 	github.com/rancher/machine v0.15.0-rancher99
 	github.com/rancher/wrangler v1.1.2
@@ -82,6 +92,7 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/harvester/go-common v0.0.0-20240627083535-c1208a490f89 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
+	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
