@@ -194,14 +194,6 @@ func (d *Driver) putVMSubResource(subResource string) error {
 	return c.KubeVirtSubresourceClient.Put().Namespace(d.VMNamespace).Resource(vmResource).SubResource(subResource).Name(d.MachineName).Do(d.ctx).Error()
 }
 
-func (d *Driver) deleteVolume(name string) error {
-	c, err := d.getClient()
-	if err != nil {
-		return err
-	}
-	return c.KubeClient.CoreV1().PersistentVolumeClaims(d.VMNamespace).Delete(d.ctx, name, metav1.DeleteOptions{})
-}
-
 func (d *Driver) createVM(vm *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error) {
 	c, err := d.getClient()
 	if err != nil {

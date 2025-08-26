@@ -8,7 +8,7 @@ RUN zypper -n rm container-suseconnect && \
 
 ## install golangci-lint
 RUN if [ "${ARCH}" = "amd64" ]; then \
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.64.8; \
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest; \
     fi
 
 ENV DAPPER_ENV REPO TAG DRONE_TAG CROSS
