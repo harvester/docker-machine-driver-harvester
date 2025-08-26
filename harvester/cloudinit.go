@@ -2,7 +2,7 @@ package harvester
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"dario.cat/mergo"
@@ -108,7 +108,7 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		userData = string(userDataByte)
 	}
 	if d.CloudConfig != "" {
-		cloudConfigContent, err := ioutil.ReadFile(d.CloudConfig)
+		cloudConfigContent, err := os.ReadFile(d.CloudConfig)
 		if err != nil {
 			return "", "", err
 		}

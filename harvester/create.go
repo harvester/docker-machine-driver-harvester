@@ -3,7 +3,7 @@ package harvester
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +16,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 
 	"github.com/harvester/harvester/pkg/builder"
@@ -178,7 +178,7 @@ func (d *Driver) Create() error {
 func (d *Driver) waitForState(desiredState state.State) error {
 	log.Debugf("Waiting for node become %s", desiredState)
 	if err := mcnutils.WaitForSpecific(drivers.MachineInState(d, desiredState), 120, 5*time.Second); err != nil {
-		return fmt.Errorf("Too many retries waiting for machine to be %s.  Last error: %s", desiredState, err)
+		return fmt.Errorf("too many retries waiting for machine to be %s.  Last error: %s", desiredState, err)
 	}
 	return nil
 }
@@ -190,7 +190,7 @@ func (d *Driver) waitForIP() error {
 	}
 	log.Debugf("Waiting for node get ip")
 	if err := mcnutils.WaitForSpecific(ipIsNotEmpty, 120, 5*time.Second); err != nil {
-		return fmt.Errorf("Too many retries waiting for get machine's ip.  Last error: %s", err)
+		return fmt.Errorf("too many retries waiting for get machine's ip.  Last error: %s", err)
 	}
 	return nil
 }
@@ -212,7 +212,7 @@ func (d *Driver) waitForRestart(oldUID string) error {
 	}
 	log.Debugf("Waiting for node restarted")
 	if err := mcnutils.WaitForSpecific(restarted, 120, 5*time.Second); err != nil {
-		return fmt.Errorf("Too many retries waiting for machine restart.  Last error: %s", err)
+		return fmt.Errorf("too many retries waiting for machine restart.  Last error: %s", err)
 	}
 	return d.waitForReady()
 }
@@ -239,7 +239,7 @@ func (d *Driver) createKeyPair() error {
 		}
 	}
 
-	publicKey, err := ioutil.ReadFile(publicKeyFile)
+	publicKey, err := os.ReadFile(publicKeyFile)
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func (d *Driver) addDisk(vmBuilder *builder.VMBuilder, disk *Disk, diskIndex int
 	}
 	pvcOption := &builder.PersistentVolumeClaimOption{
 		ImageID:          imageID,
-		StorageClassName: pointer.StringPtr(disk.StorageClassName),
+		StorageClassName: ptr.To(disk.StorageClassName),
 		VolumeMode:       corev1.PersistentVolumeBlock,
 		AccessMode:       corev1.ReadWriteMany,
 	}

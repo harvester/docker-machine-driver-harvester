@@ -175,7 +175,7 @@ func (d *Driver) waitRemoved() error {
 	}
 	log.Debugf("Waiting for node removed")
 	if err := mcnutils.WaitForSpecific(removed, 120, 5*time.Second); err != nil {
-		return fmt.Errorf("Too many retries waiting for machine removed.  Last error: %s", err)
+		return fmt.Errorf("too many retries waiting for machine removed.  Last error: %s", err)
 	}
 	return nil
 }
