@@ -4,38 +4,38 @@ go 1.24.2
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v1.4.2-0.20170731201646-1009e6a40b29 // oras dep requires a replace is set
-	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20240801050511-f16be8edf3fa
-	github.com/longhorn/longhorn-manager => github.com/longhorn/longhorn-manager v0.0.0-20240731060708-b10fa4a47fff
+	github.com/harvester/harvester => github.com/harvester/harvester v0.3.0
+	github.com/longhorn/longhorn-manager => github.com/longhorn/longhorn-manager v0.8.1
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
-	github.com/rancher/machine => github.com/rancher/machine v0.15.0-rancher119
+	github.com/rancher/machine => github.com/rancher/machine v0.16.2
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20240919204204-3da2ae0cabd1
 	github.com/rancher/rancher/pkg/client => github.com/rancher/rancher/pkg/client v0.0.0-20240919204204-3da2ae0cabd1
 
-	k8s.io/api => k8s.io/api v0.31.5
-	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.31.5
-	k8s.io/apimachinery => k8s.io/apimachinery v0.31.5
-	k8s.io/apiserver => k8s.io/apiserver v0.31.5
-	k8s.io/client-go => k8s.io/client-go v0.31.5
-	k8s.io/cloud-provider => k8s.io/cloud-provider v0.31.5
-	k8s.io/component-base => k8s.io/component-base v0.31.5
-	k8s.io/cri-api => k8s.io/cri-api v0.31.5
-	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.31.5
-	k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.31.5
-	k8s.io/endpointslice => k8s.io/endpointslice v0.31.5
-	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.31.5
-	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.31.5
+	k8s.io/api => k8s.io/api v0.34.1
+	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.34.1
+	k8s.io/apimachinery => k8s.io/apimachinery v0.34.1
+	k8s.io/apiserver => k8s.io/apiserver v0.34.1
+	k8s.io/client-go => k8s.io/client-go v0.34.1
+	k8s.io/cloud-provider => k8s.io/cloud-provider v0.34.1
+	k8s.io/component-base => k8s.io/component-base v0.34.1
+	k8s.io/cri-api => k8s.io/cri-api v0.34.1
+	k8s.io/csi-translation-lib => k8s.io/csi-translation-lib v0.34.1
+	k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation v0.34.1
+	k8s.io/endpointslice => k8s.io/endpointslice v0.34.1
+	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.34.1
+	k8s.io/kube-controller-manager => k8s.io/kube-controller-manager v0.34.1
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340
-	k8s.io/kube-proxy => k8s.io/kube-proxy v0.31.5
-	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.31.5
-	k8s.io/kubernetes => k8s.io/kubernetes v1.31.5
+	k8s.io/kube-proxy => k8s.io/kube-proxy v0.34.1
+	k8s.io/kube-scheduler => k8s.io/kube-scheduler v0.34.1
+	k8s.io/kubernetes => k8s.io/kubernetes v1.34.1
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.31.5
-	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.31.5
+	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.34.1
 
-	kubevirt.io/api => github.com/kubevirt/api v1.5.0
-	kubevirt.io/client-go => github.com/kubevirt/client-go v1.5.0
-	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.5.0
-	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.19.7
+	kubevirt.io/api => github.com/kubevirt/api v1.6.0
+	kubevirt.io/client-go => github.com/kubevirt/client-go v1.6.0
+	kubevirt.io/kubevirt => kubevirt.io/kubevirt v1.6.0
+	sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.22.1
 	sigs.k8s.io/structured-merge-diff => sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2
 )
 
@@ -43,15 +43,15 @@ require (
 	dario.cat/mergo v1.0.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/harvester/harvester v1.6.0-rc3
-	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.3.0
-	github.com/rancher/machine v0.15.0-rancher99
+	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
+	github.com/rancher/machine v0.16.2
 	github.com/rancher/wrangler v1.1.2
-	github.com/stretchr/testify v1.9.0
-	k8s.io/api v0.31.5
-	k8s.io/apimachinery v0.31.5
+	github.com/stretchr/testify v1.11.1
+	k8s.io/api v0.34.1
+	k8s.io/apimachinery v0.34.1
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/utils v0.0.0-20240711033017-18e509b52bc8
-	kubevirt.io/api v1.1.1
+	kubevirt.io/api v1.6.0
 )
 
 require (
