@@ -36,83 +36,56 @@ func (d *Driver) Create() error {
 	if err := d.createKeyPair(); err != nil {
 		return err
 	}
+
 	// create vm
 	cloudInitSource, cloudConfigSecret, err := d.buildCloudInit()
 	if err != nil {
 		return err
 	}
-	vmBuilder := builder.NewVMBuilder("docker-machine-driver-harvester").
-		Namespace(d.VMNamespace).Name(d.MachineName).CPU(d.CPU).Memory(d.MemorySize).
-		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
-		EvictionStrategy(true).RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
 
-	// VM naming convention is of form: clusterName-poolName-generatedString
-	// we can reverse split this to identify unique machinesets name, to label nodes
-	// with this unique machine set. This can then be used for populating affinity rules
-	// This label will take the form `namespace-clustername-poolname`
-	machineSetSplit := strings.Split(d.MachineName, "-")
-	machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
-	machineSetName, err := formatLabelValue(strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-"))
+	vmBuilder := builder.
+		NewVMBuilder("docker-machine-driver-harvester").
+		Namespace(d.VMNamespace).
+		Name(d.MachineName).
+		CPU(d.CPU).
+		Memory(d.MemorySize).
+		CloudInitDisk(builder.CloudInitDiskName, builder.DiskBusVirtio, false, 0, *cloudInitSource).
+		EvictionStrategy(true).
+		RunStrategy(kubevirtv1.RunStrategyRerunOnFailure)
+
+	vmBuilder, err = d.Labels(vmBuilder)
 	if err != nil {
 		return err
 	}
-	vmBuilder.Labels(labels.Set{
-		machineSetNameLabelKey: machineSetName,
-	})
 
-	if d.ClusterName != "" {
-		// figure out the node pool name from the VM name by trimming off the
-		// generated string at the end and the cluster name at the beginning
-		nodePoolName := d.MachineName[:strings.LastIndex(d.MachineName, "-")]
-		nodePoolName = strings.TrimPrefix(nodePoolName, d.ClusterName)
-		nodePoolName = strings.TrimLeft(nodePoolName, "-")
-
-		vmBuilder.Labels(labels.Set{
-			clusterNameLabelKey: d.ClusterName,
-			poolNameLabelKey:    nodePoolName,
-		})
+	vmBuilder, err = d.Annotations(vmBuilder)
+	if err != nil {
+		return err
 	}
 
-	if d.ReservedMemorySize != "" {
-		vmBuilder = vmBuilder.Annotations(map[string]string{reservedMemoryAnnotationKey: d.ReservedMemorySize})
+	vmBuilder, err = d.Affinity(vmBuilder)
+	if err != nil {
+		return err
 	}
 
-	// affinity
-	var affinity *corev1.Affinity
-	if d.VMAffinity != "" {
-		if err = json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
-			return err
-		}
-		additionalPodAffinityTerm := corev1.PodAffinityTerm{
-			LabelSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					machineSetNameLabelKey: machineSetName,
-				},
-			},
-			TopologyKey: "kubernetes.io/hostname",
-		}
-		additionalWeightPodAffinity := corev1.WeightedPodAffinityTerm{
-			Weight:          1,
-			PodAffinityTerm: additionalPodAffinityTerm,
-		}
-		if affinity.PodAffinity != nil {
-			affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
-		}
-
-		if affinity.PodAntiAffinity != nil {
-			affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
-		}
-	}
-	vmBuilder = vmBuilder.Affinity(affinity)
 	// ssh key
-	if d.KeyPairName != "" {
-		vmBuilder = vmBuilder.SSHKey(d.KeyPairName)
+	vmBuilder, err = d.SSHKeys(vmBuilder)
+	if err != nil {
+		return err
 	}
+
 	// network interfaces
-	vmBuilder = d.NetworkInterfaces(vmBuilder)
+	vmBuilder, err = d.NetworkInterfaces(vmBuilder)
+	if err != nil {
+		return err
+	}
 
 	// add vGPU info
-	vmBuilder = d.ConfigureVGPU(vmBuilder)
+	vmBuilder, err = d.ConfigureVGPU(vmBuilder)
+	if err != nil {
+		return err
+	}
+
 	// disks
 	vmBuilder, err = d.Disks(vmBuilder)
 	if err != nil {
@@ -120,8 +93,9 @@ func (d *Driver) Create() error {
 	}
 
 	// tpm
-	if d.EnableTPM {
-		vmBuilder = vmBuilder.TPM()
+	vmBuilder, err = d.TPMDevice(vmBuilder)
+	if err != nil {
+		return err
 	}
 
 	// vm
@@ -129,8 +103,6 @@ func (d *Driver) Create() error {
 	if err != nil {
 		return err
 	}
-	vm.Kind = kubevirtv1.VirtualMachineGroupVersionKind.Kind
-	vm.APIVersion = kubevirtv1.GroupVersion.String()
 
 	if d.EnableEFI {
 		if vm.Spec.Template.Spec.Domain.Features == nil {
@@ -143,6 +115,9 @@ func (d *Driver) Create() error {
 
 	vm.Spec.Template.Spec.Domain.CPU.DedicatedCPUPlacement = d.CPUPinning
 	vm.Spec.Template.Spec.Domain.CPU.IsolateEmulatorThread = d.IsolateEmulatorThread
+
+	vm.Kind = kubevirtv1.VirtualMachineGroupVersionKind.Kind
+	vm.APIVersion = kubevirtv1.GroupVersion.String()
 
 	createdVM, err := d.createVM(vm)
 	if err != nil {
@@ -173,6 +148,115 @@ func (d *Driver) Create() error {
 	d.IPAddress = ip
 	log.Debugf("Get machine ip: %s", d.IPAddress)
 	return nil
+}
+
+func (d *Driver) Annotations(builder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	if d.ReservedMemorySize != "" {
+		builder = builder.Annotations(map[string]string{reservedMemoryAnnotationKey: d.ReservedMemorySize})
+	}
+	return builder, nil
+}
+
+// Set labels on the VirtualMachine CRD and the VirtualMachineInstante template.
+// Some labels will be automatically generated, like the cluster name, node pool
+// name and machine set. But users may specify additional custom labels as well.
+func (d *Driver) Labels(builder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	machineSetName, err := d.getMachineSetName()
+	if err != nil {
+		return builder, err
+	}
+
+	builder.Labels(labels.Set{
+		machineSetNameLabelKey: machineSetName,
+	})
+	builder.VirtualMachineInstanceTemplateLabels(labels.Set{
+		machineSetNameLabelKey: machineSetName,
+	})
+
+	if d.ClusterName != "" {
+		// figure out the node pool name from the VM name by trimming off the
+		// generated string at the end and the cluster name at the beginning
+		nodePoolName := d.MachineName[:strings.LastIndex(d.MachineName, "-")]
+		nodePoolName = strings.TrimPrefix(nodePoolName, d.ClusterName)
+		nodePoolName = strings.TrimLeft(nodePoolName, "-")
+
+		builder.Labels(labels.Set{
+			clusterNameLabelKey: d.ClusterName,
+			poolNameLabelKey:    nodePoolName,
+		})
+		builder.VirtualMachineInstanceTemplateLabels(labels.Set{
+			clusterNameLabelKey: d.ClusterName,
+			poolNameLabelKey:    nodePoolName,
+		})
+	}
+
+	builder.Labels(d.VMLabels)
+	builder.VirtualMachineInstanceTemplateLabels(d.VMLabels)
+
+	return builder, nil
+}
+
+func (d *Driver) getMachineSetName() (string, error) {
+	// VM naming convention is of form: clusterName-poolName-generatedString
+	// we can reverse split this to identify unique machinesets name, to label nodes
+	// with this unique machine set. This can then be used for populating affinity rules
+	// This label will take the form `namespace-clustername-poolname`
+	machineSetSplit := strings.Split(d.MachineName, "-")
+	machineSetSplit = append([]string{d.VMNamespace}, machineSetSplit...)
+	machineSetName, err := formatLabelValue(strings.Join(machineSetSplit[:len(machineSetSplit)-2], "-"))
+	if err != nil {
+		return "", err
+	}
+	return machineSetName, nil
+}
+
+func (d *Driver) SSHKeys(builder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	if d.KeyPairName != "" {
+		builder = builder.SSHKey(d.KeyPairName)
+	}
+	return builder, nil
+}
+
+func (d *Driver) TPMDevice(builder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	if d.EnableTPM {
+		builder = builder.TPM()
+	}
+	return builder, nil
+}
+
+func (d *Driver) Affinity(builder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	machineSetName, err := d.getMachineSetName()
+	if err != nil {
+		return builder, err
+	}
+
+	var affinity *corev1.Affinity
+	if d.VMAffinity != "" {
+		if err := json.Unmarshal([]byte(d.VMAffinity), &affinity); err != nil {
+			return builder, err
+		}
+		additionalPodAffinityTerm := corev1.PodAffinityTerm{
+			LabelSelector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					machineSetNameLabelKey: machineSetName,
+				},
+			},
+			TopologyKey: "kubernetes.io/hostname",
+		}
+		additionalWeightPodAffinity := corev1.WeightedPodAffinityTerm{
+			Weight:          1,
+			PodAffinityTerm: additionalPodAffinityTerm,
+		}
+		if affinity.PodAffinity != nil {
+			affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
+		}
+
+		if affinity.PodAntiAffinity != nil {
+			affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution = append(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution, additionalWeightPodAffinity)
+		}
+	}
+	builder = builder.Affinity(affinity)
+	return builder, nil
 }
 
 func (d *Driver) waitForState(desiredState state.State) error {
@@ -321,7 +405,7 @@ func (d *Driver) AddNetworkInterface(vmBuilder *builder.VMBuilder, networkInterf
 	return vmBuilder.NetworkInterface(interfaceName, networkInterface.Model, networkInterface.MACAddress, networkInterface.Type, networkInterface.NetworkName)
 }
 
-func (d *Driver) NetworkInterfaces(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
+func (d *Driver) NetworkInterfaces(vmBuilder *builder.VMBuilder) (*builder.VMBuilder, error) {
 	if d.NetworkInfo != nil {
 		for i, networkInterface := range d.NetworkInfo.NetworkInterfaces {
 			d.AddNetworkInterface(vmBuilder, &networkInterface, i)
@@ -336,18 +420,16 @@ func (d *Driver) NetworkInterfaces(vmBuilder *builder.VMBuilder) *builder.VMBuil
 		}
 		d.AddNetworkInterface(vmBuilder, &networkInterface, 0)
 	}
-	return vmBuilder
+	return vmBuilder, nil
 }
 
 // ConfigureVGPU will configure vmBuilder with vGPUInfo passed through driver
-func (d *Driver) ConfigureVGPU(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
-	if d.VGPUInfo == nil {
-		return vmBuilder
+func (d *Driver) ConfigureVGPU(vmBuilder *builder.VMBuilder) (*builder.VMBuilder, error) {
+	if d.VGPUInfo != nil {
+		for _, v := range d.VGPUInfo.VGPURequests {
+			// pass name, deviceName, tags(if any), and vGPUOptions if any
+			vmBuilder = vmBuilder.GPU(v.Name, v.DeviceName, "", nil)
+		}
 	}
-
-	for _, v := range d.VGPUInfo.VGPURequests {
-		// pass name, deviceName, tags(if any), and vGPUOptions if any
-		vmBuilder = vmBuilder.GPU(v.Name, v.DeviceName, "", nil)
-	}
-	return vmBuilder
+	return vmBuilder, nil
 }
