@@ -82,6 +82,8 @@ type Driver struct {
 	IsolateEmulatorThread bool
 
 	EnableTPM bool
+
+	VMLabels map[string]string
 }
 
 func NewDriver(hostName, storePath string) *Driver {

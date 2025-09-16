@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/rancher/machine/libmachine/drivers"
 	rpcdriver "github.com/rancher/machine/libmachine/drivers/rpc"
@@ -185,6 +186,11 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Usage:  "size of reserved memory for machine (in MiB, integer value)",
 			Value:  defaultReservedMemorySize,
 		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_VM_LABELS",
+			Name:   "harvester-vm-labels",
+			Usage:  "additional user-defined labels to set on the VM and VMI CRDs",
+		},
 	}
 }
 
@@ -286,8 +292,39 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.CPUPinning = flags.Bool("harvester-cpu-pinning")
 	d.IsolateEmulatorThread = flags.Bool("harvester-isolate-emulator-thread")
 
+	var err error
 	d.EnableTPM = flags.Bool("harvester-enable-tpm")
+	d.VMLabels, err = parseLabels(flags.String("harvester-labels"))
+	if err != nil {
+		return err
+	}
+
 	return d.checkConfig()
+}
+
+func parseLabels(labels string) (map[string]string, error) {
+	result := map[string]string{}
+
+	if labels == "" {
+		return result, nil
+	}
+
+	kvPairs := strings.Split(labels, ",")
+	for _, pair := range kvPairs {
+		parts := strings.Split(pair, "=")
+		if len(parts) != 2 {
+			return map[string]string{}, ParseLabelsSyntaxErr
+		}
+
+		val, err := formatLabelValue(parts[1])
+		if err != nil {
+			return map[string]string{}, fmt.Errorf("%w: %s", FormatLabelValueErr, parts[1])
+		}
+
+		result[parts[0]] = val
+	}
+
+	return result, nil
 }
 
 func stringSupportBase64(value string) string {
