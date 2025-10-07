@@ -4,6 +4,7 @@ go 1.25.0
 
 replace (
 	github.com/docker/docker => github.com/moby/moby v1.4.2-0.20170731201646-1009e6a40b29 // oras dep requires a replace is set
+	github.com/golang/glog => github.com/golang/glog v1.2.4 // CVE-2024-45339
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20250831134456-11f4f0204b16
 	github.com/longhorn/longhorn-manager => github.com/longhorn/longhorn-manager v0.0.0-20240731060708-b10fa4a47fff
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
