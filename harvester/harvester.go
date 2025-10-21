@@ -13,8 +13,6 @@ import (
 	"github.com/rancher/machine/libmachine/state"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	kubevirtv1 "kubevirt.io/api/core/v1"
-
-	harvesterutil "github.com/harvester/harvester/pkg/util"
 )
 
 const (
@@ -190,22 +188,7 @@ func (d *Driver) Remove() error {
 		return err
 	}
 
-	removeAll := false
-	if value, ok := vm.Annotations[removeAllPVCsAnnotationKey]; ok && value == "true" {
-		log.Debugf("Force the removal of all persistent volume claims")
-		removeAll = true
-	}
-
-	removedPVCs := make([]string, 0, len(vm.Spec.Template.Spec.Volumes))
-	for _, volume := range vm.Spec.Template.Spec.Volumes {
-		if volume.PersistentVolumeClaim == nil || (!removeAll && volume.PersistentVolumeClaim.Hotpluggable) {
-			continue
-		}
-		removedPVCs = append(removedPVCs, volume.PersistentVolumeClaim.ClaimName)
-	}
-	vmCopy := vm.DeepCopy()
-	vmCopy.Annotations[harvesterutil.RemovedPVCsAnnotationKey] = strings.Join(removedPVCs, ",")
-	if _, err = d.updateVM(vmCopy); err != nil {
+	if _, err = d.patchRemovedPVCs(vm); err != nil {
 		return err
 	}
 	if err = d.deleteVM(); err != nil {
