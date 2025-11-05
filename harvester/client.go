@@ -9,6 +9,7 @@ import (
 	harvclient "github.com/harvester/harvester/pkg/generated/clientset/versioned"
 	"github.com/harvester/harvester/pkg/generated/clientset/versioned/scheme"
 	cniv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
+	"github.com/rancher/machine/libmachine/log"
 	"github.com/rancher/wrangler/pkg/kubeconfig"
 	corev1 "k8s.io/api/core/v1"
 	storagev1 "k8s.io/api/storage/v1"
@@ -18,6 +19,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+
+	harvesterutil "github.com/harvester/harvester/pkg/util"
 )
 
 type Client struct {
@@ -173,6 +176,47 @@ func (d *Driver) updateVM(newVM *kubevirtv1.VirtualMachine) (*kubevirtv1.Virtual
 		return nil, err
 	}
 	return c.HarvesterClient.KubevirtV1().VirtualMachines(d.VMNamespace).Update(d.ctx, newVM, metav1.UpdateOptions{})
+}
+
+func (d *Driver) patchRemovedPVCs(vm *kubevirtv1.VirtualMachine) (*kubevirtv1.VirtualMachine, error) {
+	removeAll := false
+	if value, ok := vm.Annotations[removeAllPVCsAnnotationKey]; ok && value == "true" {
+		log.Debugf("Force the removal of all persistent volume claims")
+		removeAll = true
+	}
+
+	removedPVCs := make(map[string]struct{})
+	for _, volume := range vm.Spec.Template.Spec.Volumes {
+		if volume.PersistentVolumeClaim == nil || (!removeAll && volume.PersistentVolumeClaim.Hotpluggable) {
+			continue
+		}
+		removedPVCs[volume.PersistentVolumeClaim.ClaimName] = struct{}{}
+	}
+
+	if removeAll {
+		c, err := d.getClient()
+		if err != nil {
+			return nil, err
+		}
+		pvcList, err := c.KubeClient.CoreV1().PersistentVolumeClaims(d.VMNamespace).List(d.ctx, metav1.ListOptions{
+			LabelSelector: fmt.Sprintf("%s=%s", clusterNameLabelKey, d.ClusterName),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, pvc := range pvcList.Items {
+			removedPVCs[pvc.Name] = struct{}{}
+		}
+	}
+
+	keys := make([]string, 0, len(removedPVCs))
+	for key := range removedPVCs {
+		keys = append(keys, key)
+	}
+	vmCopy := vm.DeepCopy()
+	vmCopy.Annotations[harvesterutil.RemovedPVCsAnnotationKey] = strings.Join(keys, ",")
+	return d.updateVM(vmCopy)
 }
 
 func (d *Driver) deleteVM() error {
