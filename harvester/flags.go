@@ -186,8 +186,8 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Value:  defaultReservedMemorySize,
 		},
 		mcnflag.StringFlag{
-			EnvVar: "HARVESTER_VM_CPU_MODEL",
-			Name:   "harvester-vm-cpu-model",
+			EnvVar: "HARVESTER_CPU_MODEL",
+			Name:   "harvester-cpu-model",
 			Usage:  "model of CPU for machine",
 		},
 	}
@@ -227,7 +227,7 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.ClusterName = flags.String("harvester-cluster-name")
 
 	d.CPU = flags.Int("harvester-cpu-count")
-	d.VMCPUModel = flags.String("harvester-vm-cpu-model")
+	d.CPUModel = flags.String("harvester-cpu-model")
 	d.MemorySize = fmt.Sprintf("%dGi", flags.Int("harvester-memory-size"))
 	if flags.Int("harvester-reserved-memory-size") > 0 {
 		d.ReservedMemorySize = fmt.Sprintf("%dMi", flags.Int("harvester-reserved-memory-size"))
