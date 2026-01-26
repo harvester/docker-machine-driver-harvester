@@ -144,8 +144,8 @@ func (d *Driver) Create() error {
 	vm.Spec.Template.Spec.Domain.CPU.DedicatedCPUPlacement = d.CPUPinning
 	vm.Spec.Template.Spec.Domain.CPU.IsolateEmulatorThread = d.IsolateEmulatorThread
 
-	if d.VMCPUModel != "" {
-		vm.Spec.Template.Spec.Domain.CPU.Model = d.VMCPUModel
+	if d.CPUModel != "" {
+		vm.Spec.Template.Spec.Domain.CPU.Model = d.CPUModel
 	}
 
 	createdVM, err := d.createVM(vm)

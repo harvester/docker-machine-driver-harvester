@@ -45,7 +45,7 @@ type Driver struct {
 	ServerVersion string
 
 	CPU                int
-	VMCPUModel         string
+	CPUModel           string
 	MemorySize         string
 	ReservedMemorySize string
 	DiskSize           string
