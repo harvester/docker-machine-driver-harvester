@@ -1,6 +1,6 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.25
+go 1.25.7
 
 replace (
 	github.com/golang/glog => github.com/golang/glog v1.2.4 // CVE-2024-45339
