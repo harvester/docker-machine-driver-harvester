@@ -7,9 +7,7 @@ RUN zypper -n rm container-suseconnect && \
     zypper -n install git curl docker gzip tar wget awk
 
 ## install golangci-lint
-RUN if [ "${ARCH}" = "amd64" ]; then \
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.8.0; \
-    fi
+COPY --from=golangci/golangci-lint:v2.8.0-alpine@sha256:1194f3bfcbaeeb92d8d159fdfbe2a79d18ec0a222d9d984b1438906bca416b51 /usr/bin/golangci-lint /usr/local/bin/golangci-lint
 
 ENV DAPPER_ENV REPO TAG DRONE_TAG CROSS
 ENV DAPPER_SOURCE /go/src/github.com/harvester/docker-machine-driver-harvester/
