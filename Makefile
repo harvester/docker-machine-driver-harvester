@@ -13,10 +13,6 @@ else
 endif
 BANNER = @printf "$(BOLD)$(CYAN)[target: $@]$(RESET)\n"
 
-# Allocate a TTY in dev (for ctrl+c) but not in CI
-MK_DOCKER_RUN_OPTS_TTY := $(if $(CI),,-it)
-export MK_DOCKER_RUN_OPTS_TTY
-
 MK_HOST_ARCH := $(shell uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 export MK_HOST_ARCH
 
