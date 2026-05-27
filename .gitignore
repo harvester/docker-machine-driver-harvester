@@ -3,4 +3,5 @@
 /.idea
 /bin
 /dist
+/cover
 docker-machine-driver-harvester
