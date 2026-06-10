@@ -76,6 +76,7 @@ type Driver struct {
 	EnableEFI        bool
 	EnableSecureBoot bool
 	VGPUInfo         *VGPUInfo
+	HostDeviceInfo   *HostDeviceInfo
 
 	CPUPinning            bool
 	IsolateEmulatorThread bool
