@@ -164,6 +164,24 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-vgpu-info",
 			Usage:  "harvester-vgpu-info",
 		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_HOST_DEVICE_INFO",
+			Name:   "harvester-host-device-info",
+			Usage: `JSON string containing host device requests, e.g.:
+{
+  "hostDeviceRequests: [
+		{
+			"name": "qat",
+			"deviceName": "intel.com/qat""
+		},
+		{
+			"name": "tesla",
+			"deviceName": "nvidia.com/TU104GL_Tesla_T4"
+		}
+	]
+}
+`,
+		},
 		mcnflag.BoolFlag{
 			EnvVar: "HARVESTER_CPU_PINNING",
 			Name:   "harvester-cpu-pinning",
@@ -287,6 +305,15 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 			return err
 		}
 		d.VGPUInfo = vGPUInfo
+	}
+
+	hostDeviceInfoString := flags.String("harvester-host-device-info")
+	if hostDeviceInfoString != "" {
+		hdi, err := parseHostDeviceInfo(hostDeviceInfoString)
+		if err != nil {
+			return err
+		}
+		d.HostDeviceInfo = hdi
 	}
 
 	d.CPUPinning = flags.Bool("harvester-cpu-pinning")
