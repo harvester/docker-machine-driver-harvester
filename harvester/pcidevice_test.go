@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 type testcase struct {
@@ -22,16 +23,16 @@ func Test_parseHostDeviceInfo(t *testing.T) {
 		},
 		{
 			description: "non-empty no device info",
-			input:       `{"hostDeviceRequests":[]}`,
+			input:       `{"hostDevices":[]}`,
 			expectation: &HostDeviceInfo{
-				HostDeviceRequests: []HostDeviceRequest{},
+				HostDevices: []kubevirtv1.HostDevice{},
 			},
 		},
 		{
 			description: "single device info",
-			input:       `{"hostDeviceRequests":[{"name":"qat","deviceName":"intel.com/qat"}]}`,
+			input:       `{"hostDevices":[{"name":"qat","deviceName":"intel.com/qat"}]}`,
 			expectation: &HostDeviceInfo{
-				HostDeviceRequests: []HostDeviceRequest{
+				HostDevices: []kubevirtv1.HostDevice{
 					{
 						Name:       "qat",
 						DeviceName: "intel.com/qat",

@@ -3,15 +3,12 @@ package harvester
 import (
 	"encoding/json"
 	"fmt"
+
+	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
 type HostDeviceInfo struct {
-	HostDeviceRequests []HostDeviceRequest `json:"hostDeviceRequests"`
-}
-
-type HostDeviceRequest struct {
-	Name       string `json:"name"`
-	DeviceName string `json:"deviceName"`
+	HostDevices []kubevirtv1.HostDevice `json:"hostDevices"`
 }
 
 func parseHostDeviceInfo(info string) (*HostDeviceInfo, error) {
