@@ -360,8 +360,8 @@ func (d *Driver) ConfigureVGPU(vmBuilder *builder.VMBuilder) *builder.VMBuilder 
 // Configure host devices (USB, PCI, etc)
 func (d *Driver) ConfigureHostDevices(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
 	if d.HostDeviceInfo != nil {
-		for _, d := range d.HostDeviceInfo.HostDeviceRequests {
-			vmBuilder.AddHostDevice(d.Name, d.DeviceName, "")
+		for _, d := range d.HostDeviceInfo.HostDevices {
+			vmBuilder.AddHostDevice(d.Name, d.DeviceName, d.Tag)
 		}
 	}
 	return vmBuilder
