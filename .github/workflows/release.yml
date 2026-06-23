@@ -60,7 +60,7 @@ jobs:
         credentials_json: '${{ env.GOOGLE_AUTH }}'
 
     - name: Publish master
-      uses: google-github-actions/upload-cloud-storage@c0f6160ff80057923ff50e5e567695cea181ec23  # v2
+      uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a  # v3
       if: startsWith(github.ref, 'refs/heads/master')
       with:
         path: dist/artifacts
@@ -71,7 +71,7 @@ jobs:
           cache-control: public,no-cache,proxy-revalidate
 
     - name: Publish tag
-      uses: google-github-actions/upload-cloud-storage@c0f6160ff80057923ff50e5e567695cea181ec23  # v2
+      uses: google-github-actions/upload-cloud-storage@6397bd7208e18d13ba2619ee21b9873edc94427a  # v3
       if: startsWith(github.ref, 'refs/tags/')
       with:
         path: dist/artifacts
