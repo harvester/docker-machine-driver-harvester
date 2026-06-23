@@ -49,7 +49,7 @@ jobs:
         path: ./dist/artifacts/
 
     - name: Read Secrets
-      uses: rancher-eio/read-vault-secrets@d266f55186f80a893839f6e15662e67388e443e6  # main
+      uses: rancher-eio/read-vault-secrets@7282bf97898cd1c16c89f837e0bb442e6d384c89  # main
       with:
         secrets: |
           secret/data/github/repo/${{ github.repository }}/google-auth/harvester/credentials token | GOOGLE_AUTH ;
