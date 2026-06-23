@@ -2,7 +2,8 @@ ARG MK_GOLANGCI_LINT_IMAGE
 ARG MK_PACKAGE_BASE registry.suse.com/bci/bci-base:16.0
 FROM ${MK_GOLANGCI_LINT_IMAGE} AS golangci-lint
 
-FROM golang:1.25.11-bookworm AS buildenv
+FROM golang:1.25-bookworm AS buildenv
+ENV GOTOOLCHAIN=auto
 
 COPY --from=golangci-lint /usr/bin/golangci-lint /usr/local/bin/golangci-lint
 RUN --mount=type=cache,target=/var/lib/apt/lists apt-get update -qq \
