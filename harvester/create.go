@@ -113,6 +113,7 @@ func (d *Driver) Create() error {
 
 	// add vGPU info
 	vmBuilder = d.ConfigureVGPU(vmBuilder)
+	vmBuilder = d.ConfigureHostDevices(vmBuilder)
 	// disks
 	vmBuilder, err = d.Disks(vmBuilder)
 	if err != nil {
@@ -352,6 +353,16 @@ func (d *Driver) ConfigureVGPU(vmBuilder *builder.VMBuilder) *builder.VMBuilder 
 	for _, v := range d.VGPUInfo.VGPURequests {
 		// pass name, deviceName, tags(if any), and vGPUOptions if any
 		vmBuilder = vmBuilder.GPU(v.Name, v.DeviceName, "", nil)
+	}
+	return vmBuilder
+}
+
+// Configure host devices (USB, PCI, etc)
+func (d *Driver) ConfigureHostDevices(vmBuilder *builder.VMBuilder) *builder.VMBuilder {
+	if d.HostDeviceInfo != nil {
+		for _, d := range d.HostDeviceInfo.HostDevices {
+			vmBuilder.AddHostDevice(d.Name, d.DeviceName, d.Tag)
+		}
 	}
 	return vmBuilder
 }

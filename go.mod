@@ -1,9 +1,11 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.25.11
+go 1.26
 
 replace (
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.6.9
+
+	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20260325065442-726ea76ce461
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250828140533-07a90f09a491
