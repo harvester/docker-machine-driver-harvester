@@ -1,6 +1,6 @@
 module github.com/harvester/docker-machine-driver-harvester
 
-go 1.25.11
+go 1.26.4
 
 replace (
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.6.9
