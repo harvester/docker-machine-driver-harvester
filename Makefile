@@ -32,7 +32,7 @@ MK_CODECOV_TOKEN    ?=
 MK_DOCKER_PROGRESS  ?= plain
 
 MK_CODECOV_SECRET_ARG  := --secret id=codecov_token_$(MK_REPO_ID),env=MK_CODECOV_TOKEN --no-cache-filter=test
-MK_GOLANGCI_LINT_IMAGE := golangci/golangci-lint:v2.8.0-alpine@sha256:1194f3bfcbaeeb92d8d159fdfbe2a79d18ec0a222d9d984b1438906bca416b51
+MK_GOLANGCI_LINT_IMAGE := golangci/golangci-lint:v2.12.2-alpine@sha256:91b27804074a0bacea298707f016911e60cf0cdbc6c7bf5ccacb5f0606d18d60
 MK_PACKAGE_BASE        := registry.suse.com/bci/bci-base:16.0
 
 DOCKER_BUILD := \
