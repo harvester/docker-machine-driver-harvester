@@ -169,10 +169,10 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-host-device-info",
 			Usage: `JSON string containing host device requests, e.g.:
 {
-  "hostDeviceRequests: [
+  "hostDevices: [
 		{
 			"name": "qat",
-			"deviceName": "intel.com/qat""
+			"deviceName": "intel.com/qat"
 		},
 		{
 			"name": "tesla",
