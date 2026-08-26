@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"dario.cat/mergo"
-	"github.com/ghodss/yaml"
 	"github.com/harvester/harvester/pkg/builder"
+	yaml "go.yaml.in/yaml/v3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -131,8 +131,8 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 
 func mergeYaml(dst, src []byte) ([]byte, error) {
 	var (
-		srcData = make(map[string]interface{})
-		dstData = make(map[string]interface{})
+		srcData = make(map[string]any)
+		dstData = make(map[string]any)
 	)
 	if err := yaml.Unmarshal(src, &srcData); err != nil {
 		return nil, err
