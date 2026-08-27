@@ -2,14 +2,13 @@ ARG MK_GOLANGCI_LINT_IMAGE
 ARG MK_PACKAGE_BASE registry.suse.com/bci/bci-base:16.0
 FROM ${MK_GOLANGCI_LINT_IMAGE} AS golangci-lint
 
-FROM golang:1.26-trixie AS buildenv
+FROM registry.suse.com/bci/golang:1.26 AS buildenv
 ENV GOTOOLCHAIN=auto
 
 COPY --from=golangci-lint /usr/bin/golangci-lint /usr/local/bin/golangci-lint
-RUN --mount=type=cache,target=/var/lib/apt/lists apt-get update -qq \
- && apt-get install -y --no-install-recommends \
-  gzip \
-  tar
+RUN --mount=type=cache,target=/var/cache/zypp zypper install -y \
+    gzip \
+    tar 
 
 # ---- base ----
 FROM buildenv AS base
