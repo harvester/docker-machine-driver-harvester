@@ -37,7 +37,7 @@ func TestDriver_mergeCloudInitUserData(t *testing.T) {
 			},
 			wantUserData: `#cloud-config
 runcmd:
-- sh /usr/local/custom_script/install.sh
+    - sh /usr/local/custom_script/install.sh
 `,
 			wantErr: false,
 		},
@@ -48,24 +48,24 @@ runcmd:
 				UserData: `#cloud-config
 package_update: true
 packages:
-- qemu-guest-agent
+    - qemu-guest-agent
 runcmd:
-- - systemctl
-- - enable
-- - --now
-- - qemu-guest-agent.service
+    - - systemctl
+      - enable
+      - --now
+      - qemu-guest-agent.service
 `,
 			},
 			wantUserData: `#cloud-config
 package_update: true
 packages:
-- qemu-guest-agent
+    - qemu-guest-agent
 runcmd:
-- - systemctl
-- - enable
-- - --now
-- - qemu-guest-agent.service
-- sh /usr/local/custom_script/install.sh
+    - - systemctl
+      - enable
+      - --now
+      - qemu-guest-agent.service
+    - sh /usr/local/custom_script/install.sh
 `,
 			wantErr: false,
 		},
@@ -82,7 +82,7 @@ runcmd:
 				return
 			}
 			if got != tt.wantUserData {
-				t.Errorf("mergeCloudInit() got = %v, want %v", got, tt.wantUserData)
+				t.Errorf("mergeCloudInit()\nhave:\n\n%v\n---\nwant\n\n%v", got, tt.wantUserData)
 			}
 		})
 	}

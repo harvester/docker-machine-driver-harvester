@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ghodss/yaml"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 func UnmarshalDiskInfo(data []byte) (DiskInfo, error) {
@@ -126,16 +126,16 @@ func checkNetworkData(networkDataStr string) error {
 	return nil
 }
 
-func parserNetworkData(networkDataStr string) (map[string]interface{}, float64, error) {
-	var networkData = make(map[string]interface{})
+func parserNetworkData(networkDataStr string) (map[string]any, int, error) {
+	var networkData = make(map[string]any)
 	if err := yaml.Unmarshal([]byte(networkDataStr), &networkData); err != nil {
 		return nil, 0, err
 	}
 	// root section
-	var rootSection map[string]interface{}
+	var rootSection map[string]any
 	networkSection, ok := networkData["network"]
 	if ok {
-		rootSection = networkSection.(map[string]interface{})
+		rootSection = networkSection.(map[string]any)
 	} else {
 		rootSection = networkData
 	}
@@ -145,11 +145,11 @@ func parserNetworkData(networkDataStr string) (map[string]interface{}, float64, 
 	if err != nil {
 		return rootSection, 0, err
 	}
-	version := versionSection.(float64)
+	version := versionSection.(int)
 	return rootSection, version, nil
 }
 
-func checkNetworkDataV1(network map[string]interface{}) error {
+func checkNetworkDataV1(network map[string]any) error {
 	var defaultGatewayCount, nameServerCount, dhcpAllCount int
 
 	// network.config
@@ -157,10 +157,10 @@ func checkNetworkDataV1(network map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	networkConfigs := networkConfigSection.([]interface{})
+	networkConfigs := networkConfigSection.([]any)
 
 	for _, networkConfig := range networkConfigs {
-		config := networkConfig.(map[string]interface{})
+		config := networkConfig.(map[string]any)
 		// network.config[].type
 		typeSection, err := mustGetSection(config, "type")
 		if err != nil {
@@ -200,17 +200,17 @@ func checkNetworkDataV1(network map[string]interface{}) error {
 	return nil
 }
 
-func getNameServerAddressCount(config map[string]interface{}) (int, error) {
+func getNameServerAddressCount(config map[string]any) (int, error) {
 	// network.config[].address
 	nameServerAddressesSection, err := mustGetSection(config, "address")
 	if err != nil {
 		return 0, err
 	}
-	nameServerAddresses := nameServerAddressesSection.([]interface{})
+	nameServerAddresses := nameServerAddressesSection.([]any)
 	return len(nameServerAddresses), nil
 }
 
-func getGatewayAndDHCPCount(config map[string]interface{}) (int, int, error) {
+func getGatewayAndDHCPCount(config map[string]any) (int, int, error) {
 	var gatewayCount, dhcpCount int
 
 	// network.config[].subnets
@@ -218,10 +218,10 @@ func getGatewayAndDHCPCount(config map[string]interface{}) (int, int, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-	networkSubnets := subnetsSection.([]interface{})
+	networkSubnets := subnetsSection.([]any)
 
 	for _, networkSubnet := range networkSubnets {
-		subnet := networkSubnet.(map[string]interface{})
+		subnet := networkSubnet.(map[string]any)
 		// network.config[].subnets[].type
 		subnetTypeSection, err := mustGetSection(subnet, "type")
 		if err != nil {
@@ -247,7 +247,7 @@ func getGatewayAndDHCPCount(config map[string]interface{}) (int, int, error) {
 	return gatewayCount, dhcpCount, nil
 }
 
-func mustGetSection(m map[string]interface{}, k string) (interface{}, error) {
+func mustGetSection(m map[string]any, k string) (any, error) {
 	section := m[k]
 	if section == nil {
 		return nil, fmt.Errorf("missing section: %s", k)
