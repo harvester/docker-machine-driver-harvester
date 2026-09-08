@@ -8,7 +8,7 @@ ENV GOTOOLCHAIN=auto
 COPY --from=golangci-lint /usr/bin/golangci-lint /usr/local/bin/golangci-lint
 RUN --mount=type=cache,target=/var/cache/zypp zypper install -y \
     gzip \
-    tar 
+    tar
 
 # ---- base ----
 FROM buildenv AS base
