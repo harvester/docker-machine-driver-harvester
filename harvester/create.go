@@ -16,7 +16,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/utils/ptr"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 
 	"github.com/harvester/harvester/pkg/builder"
@@ -277,7 +276,7 @@ func (d *Driver) addDisk(vmBuilder *builder.VMBuilder, disk *Disk, diskIndex int
 	}
 	pvcOption := &builder.PersistentVolumeClaimOption{
 		ImageID:          imageID,
-		StorageClassName: ptr.To(disk.StorageClassName),
+		StorageClassName: new(disk.StorageClassName),
 		VolumeMode:       corev1.PersistentVolumeBlock,
 		AccessMode:       corev1.ReadWriteMany,
 	}
