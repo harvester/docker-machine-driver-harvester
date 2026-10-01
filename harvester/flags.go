@@ -197,6 +197,21 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-enable-tpm",
 			Usage:  "enable vm TPM",
 		},
+		mcnflag.BoolFlag{
+			EnvVar: "HARVESTER_BLOCK_MULTI_QUEUE",
+			Name:   "harvester-block-multi-queue",
+			Usage:  "enable a block I/O queue per vCPU for virtio disks",
+		},
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_IO_THREADS_POLICY",
+			Name:   "harvester-io-threads-policy",
+			Usage:  "vm I/O threads policy: shared, auto or supplementalPool",
+		},
+		mcnflag.IntFlag{
+			EnvVar: "HARVESTER_IO_THREAD_COUNT",
+			Name:   "harvester-io-thread-count",
+			Usage:  "number of I/O threads when the I/O threads policy is supplementalPool",
+		},
 		mcnflag.IntFlag{
 			EnvVar: "HARVESTER_RESERVED_MEMORY_SIZE",
 			Name:   "harvester-reserved-memory-size",
@@ -320,6 +335,10 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.IsolateEmulatorThread = flags.Bool("harvester-isolate-emulator-thread")
 
 	d.EnableTPM = flags.Bool("harvester-enable-tpm")
+
+	d.BlockMultiQueue = flags.Bool("harvester-block-multi-queue")
+	d.IOThreadsPolicy = flags.String("harvester-io-threads-policy")
+	d.IOThreadCount = flags.Int("harvester-io-thread-count")
 	return d.checkConfig()
 }
 

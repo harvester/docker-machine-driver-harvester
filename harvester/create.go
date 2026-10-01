@@ -148,6 +148,8 @@ func (d *Driver) Create() error {
 		vm.Spec.Template.Spec.Domain.CPU.Model = d.CPUModel
 	}
 
+	d.ConfigureStoragePerformance(vm)
+
 	createdVM, err := d.createVM(vm)
 	if err != nil {
 		return err

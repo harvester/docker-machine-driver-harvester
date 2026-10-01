@@ -33,6 +33,11 @@ type Disk struct {
 	Type string `json:"type"`
 
 	HotPlugAble bool `json:"hotPlugAble"`
+
+	// KubeVirt high-performance disk options
+	Cache             string `json:"cache,omitempty"`
+	IO                string `json:"io,omitempty"`
+	DedicatedIOThread bool   `json:"dedicatedIOThread,omitempty"`
 }
 
 func UnmarshalNetworkInfo(data []byte) (NetworkInfo, error) {
@@ -79,6 +84,9 @@ func (d *Driver) checkConfig() error {
 			if disk.Size <= 0 {
 				return errors.New("must specify disk size in harvester disk info")
 			}
+			if err := checkDiskPerformance(&disk); err != nil {
+				return err
+			}
 		}
 	} else {
 		// Compatible with older versions
@@ -100,6 +108,9 @@ func (d *Driver) checkConfig() error {
 		if d.NetworkName == "" {
 			return errors.New("must specify harvester network name")
 		}
+	}
+	if err := checkIOThreads(d.IOThreadsPolicy, d.IOThreadCount); err != nil {
+		return err
 	}
 	return checkNetworkData(d.NetworkData)
 }
