@@ -78,6 +78,10 @@ type Driver struct {
 	VGPUInfo         *VGPUInfo
 	HostDeviceInfo   *HostDeviceInfo
 
+	BlockMultiQueue bool
+	IOThreadsPolicy string
+	IOThreadCount   int
+
 	CPUPinning            bool
 	IsolateEmulatorThread bool
 
