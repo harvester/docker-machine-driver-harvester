@@ -101,6 +101,20 @@ func Test_ConfigureStoragePerformance(t *testing.T) {
 	assert.Equal(kubevirtv1.Disk{Name: "cloudinitdisk"}, domain.Devices.Disks[2])
 }
 
+func Test_ConfigureStoragePerformance_DedicatedIOThreadDefaultsPolicy(t *testing.T) {
+	assert := require.New(t)
+
+	d := &Driver{DiskInfo: &DiskInfo{Disks: []Disk{{Type: builder.DiskTypeDisk, DedicatedIOThread: true}}}}
+	vm := newTestVM("disk-0")
+	d.ConfigureStoragePerformance(vm)
+
+	domain := vm.Spec.Template.Spec.Domain
+	assert.Equal(new(kubevirtv1.IOThreadsPolicyShared), domain.IOThreadsPolicy)
+	assert.Nil(domain.IOThreads)
+	assert.Nil(domain.Devices.BlockMultiQueue)
+	assert.Equal(new(true), domain.Devices.Disks[0].DedicatedIOThread)
+}
+
 func Test_ConfigureStoragePerformance_Unset(t *testing.T) {
 	assert := require.New(t)
 

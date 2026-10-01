@@ -62,6 +62,18 @@ func checkIOThreads(policy string, count int) error {
 	return nil
 }
 
+func (d *Driver) hasDedicatedIOThread() bool {
+	if d.DiskInfo == nil {
+		return false
+	}
+	for _, disk := range d.DiskInfo.Disks {
+		if disk.DedicatedIOThread {
+			return true
+		}
+	}
+	return false
+}
+
 // ConfigureStoragePerformance applies the KubeVirt high-performance disk options, which the VM builder does not support
 func (d *Driver) ConfigureStoragePerformance(vm *kubevirtv1.VirtualMachine) {
 	domain := &vm.Spec.Template.Spec.Domain
@@ -69,8 +81,13 @@ func (d *Driver) ConfigureStoragePerformance(vm *kubevirtv1.VirtualMachine) {
 	if d.BlockMultiQueue {
 		domain.Devices.BlockMultiQueue = new(true)
 	}
-	if d.IOThreadsPolicy != "" {
-		domain.IOThreadsPolicy = new(kubevirtv1.IOThreadsPolicy(d.IOThreadsPolicy))
+	policy := d.IOThreadsPolicy
+	// Match the Harvester VM form, which turns on the shared policy when a disk asks for a dedicated I/O thread
+	if policy == "" && d.hasDedicatedIOThread() {
+		policy = string(kubevirtv1.IOThreadsPolicyShared)
+	}
+	if policy != "" {
+		domain.IOThreadsPolicy = new(kubevirtv1.IOThreadsPolicy(policy))
 		if d.IOThreadCount > 0 && d.IOThreadCount <= math.MaxUint32 {
 			domain.IOThreads = &kubevirtv1.DiskIOThreads{SupplementalPoolThreadCount: new(uint32(d.IOThreadCount))}
 		}
