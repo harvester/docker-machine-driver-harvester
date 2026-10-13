@@ -7,7 +7,7 @@ replace (
 	github.com/cyphar/filepath-securejoin => github.com/cyphar/filepath-securejoin v0.3.6
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.7.1
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20260909043031-0dbb2db47d2d
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.14
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.3.6
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250828140533-07a90f09a491
@@ -120,7 +120,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/onsi/gomega v1.40.0 // indirect
-	github.com/opencontainers/runc v1.2.1 // indirect
+	github.com/opencontainers/runc v1.3.6 // indirect
 	github.com/opencontainers/runtime-spec v1.2.0 // indirect
 	github.com/openshift/api v0.0.1 // indirect
 	github.com/openshift/client-go v3.9.0+incompatible // indirect
