@@ -3,7 +3,7 @@ module github.com/harvester/docker-machine-driver-harvester
 go 1.26.0
 
 replace (
-	github.com/cilium/ebpf => github.com/cilium/ebpf v0.7.0
+	github.com/cilium/ebpf => github.com/cilium/ebpf v0.22.0
 	github.com/cyphar/filepath-securejoin => github.com/cyphar/filepath-securejoin v0.3.6
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.7.1
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20260909043031-0dbb2db47d2d
@@ -55,7 +55,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cilium/ebpf v0.16.0 // indirect
+	github.com/cilium/ebpf v0.22.0 // indirect
 	github.com/cisco-open/operator-tools v0.37.0 // indirect
 	github.com/cockroachdb/errors v1.12.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
