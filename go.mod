@@ -7,7 +7,6 @@ replace (
 	github.com/cyphar/filepath-securejoin => github.com/cyphar/filepath-securejoin v0.3.6
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.7.1
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20260909043031-0dbb2db47d2d
-	github.com/opencontainers/runc => github.com/opencontainers/runc v1.1.14
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20191219222812-2987a591a72c
 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20200521150516-05eb9880269c
 	github.com/rancher/rancher/pkg/apis => github.com/rancher/rancher/pkg/apis v0.0.0-20250828140533-07a90f09a491
@@ -45,7 +44,7 @@ require (
 	k8s.io/api v0.34.5
 	k8s.io/apimachinery v0.34.5
 	k8s.io/client-go v12.0.0+incompatible
-	kubevirt.io/api v1.8.3
+	kubevirt.io/api v1.9.0
 )
 
 require (
@@ -55,7 +54,6 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cilium/ebpf v0.16.0 // indirect
 	github.com/cisco-open/operator-tools v0.37.0 // indirect
 	github.com/cockroachdb/errors v1.12.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
@@ -115,13 +113,13 @@ require (
 	github.com/longhorn/longhorn-manager v1.10.0 // indirect
 	github.com/mitchellh/go-ps v1.0.0 // indirect
 	github.com/moby/sys/mountinfo v0.7.2 // indirect
+	github.com/moby/sys/userns v0.1.0 // indirect
 	github.com/moby/term v0.5.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/onsi/gomega v1.40.0 // indirect
-	github.com/opencontainers/runc v1.2.1 // indirect
-	github.com/opencontainers/runtime-spec v1.2.0 // indirect
+	github.com/opencontainers/cgroups v0.0.6 // indirect
 	github.com/openshift/api v0.0.1 // indirect
 	github.com/openshift/client-go v3.9.0+incompatible // indirect
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
@@ -180,20 +178,22 @@ require (
 	k8s.io/apiextensions-apiserver v0.34.3 // indirect
 	k8s.io/apiserver v0.34.3 // indirect
 	k8s.io/cloud-provider v0.0.0 // indirect
-	k8s.io/component-base v0.34.2 // indirect
-	k8s.io/klog/v2 v2.130.1 // indirect
+	k8s.io/component-base v0.34.3 // indirect
+	k8s.io/klog/v2 v2.140.0 // indirect
 	k8s.io/kube-aggregator v0.33.1 // indirect
 	k8s.io/kube-openapi v0.32.8 // indirect
 	k8s.io/kubernetes v1.34.2 // indirect
-	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect
-	kubevirt.io/client-go v1.8.3 // indirect
+	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5 // indirect
+	kubevirt.io/client-go v1.9.0 // indirect
 	kubevirt.io/containerized-data-importer-api v1.64.0 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.2.4 // indirect
-	kubevirt.io/kubevirt v1.8.3 // indirect
+	kubevirt.io/kubevirt v1.9.0 // indirect
+	kubevirt.io/virt-template-api v0.2.0 // indirect
+	kubevirt.io/virt-template-client-go v0.2.0 // indirect
 	sigs.k8s.io/cluster-api v1.9.5 // indirect
-	sigs.k8s.io/controller-runtime v0.22.4 // indirect
+	sigs.k8s.io/controller-runtime v0.22.5 // indirect
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
-	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
+	sigs.k8s.io/structured-merge-diff/v6 v6.3.2-0.20260122202528-d9cc6641c482 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
