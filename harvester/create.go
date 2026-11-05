@@ -150,6 +150,14 @@ func (d *Driver) Create() error {
 
 	d.ConfigureStoragePerformance(vm)
 
+	if d.isWindows() {
+		hostname := windowsHostname(cloudInitSource.UserData)
+		if hostname == "" && cloudConfigSecret != nil {
+			hostname = windowsHostname(string(cloudConfigSecret.Data["userdata"]))
+		}
+		d.ConfigureWindows(vm, hostname)
+	}
+
 	createdVM, err := d.createVM(vm)
 	if err != nil {
 		return err

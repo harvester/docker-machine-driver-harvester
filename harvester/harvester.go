@@ -86,6 +86,9 @@ type Driver struct {
 	IsolateEmulatorThread bool
 
 	EnableTPM bool
+
+	// OS is the guest operating system of the machine image (linux or windows).
+	OS string
 }
 
 func NewDriver(hostName, storePath string) *Driver {
