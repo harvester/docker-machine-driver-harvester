@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	yaml "go.yaml.in/yaml/v3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
@@ -95,6 +96,17 @@ func TestConfigureWindows(t *testing.T) {
 	assert.Equal(t, osWindows, vm.Labels[osLabelKey])
 	assert.Equal(t, osWindows, vm.Spec.Template.ObjectMeta.Labels[osLabelKey])
 	assert.Equal(t, "wincl-pool-x7k2q", spec.Hostname)
+	assert.True(t, *spec.Domain.Features.SMM.Enabled, "the EFI SMM value is kept")
+	assert.Equal(t, windowsReservedMemory, vm.Annotations[reservedMemoryAnnotationKey])
+
+	bios := &kubevirtv1.VirtualMachine{
+		ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{reservedMemoryAnnotationKey: "1Gi"}},
+		Spec:       kubevirtv1.VirtualMachineSpec{Template: &kubevirtv1.VirtualMachineInstanceTemplateSpec{}},
+	}
+	d.ConfigureWindows(bios, "")
+	require.NotNil(t, bios.Spec.Template.Spec.Domain.Features.SMM)
+	assert.True(t, *bios.Spec.Template.Spec.Domain.Features.SMM.Enabled, "SMM is enabled without EFI, like the template")
+	assert.Equal(t, "1Gi", bios.Annotations[reservedMemoryAnnotationKey], "a user value is kept")
 	require.NotNil(t, spec.Domain.Features.Hyperv)
 	assert.True(t, *spec.Domain.Features.Hyperv.Relaxed.Enabled)
 	assert.Equal(t, uint32(8191), *spec.Domain.Features.Hyperv.Spinlocks.Retries)

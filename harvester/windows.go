@@ -27,6 +27,10 @@ users:
 	// cloudbaseInitHostnameKey is the cloud-config key Cloudbase-Init reads
 	// the hostname from; rancher-machine writes it for Windows machines.
 	cloudbaseInitHostnameKey = "set_hostname"
+
+	// windowsReservedMemory is the reserved memory of Harvester's
+	// windows-image-optimized template.
+	windowsReservedMemory = "256Mi"
 )
 
 func checkOS(os string) error {
@@ -131,5 +135,18 @@ func (d *Driver) ConfigureWindows(vm *kubevirtv1.VirtualMachine, hostname string
 			Type: kubevirtv1.InputTypeTablet,
 			Bus:  kubevirtv1.InputBusUSB,
 		})
+	}
+
+	// Like the windows-image-optimized template: SMM on, unless the EFI
+	// settings already chose a value, and 256Mi of reserved memory unless the
+	// user set one.
+	if features.SMM == nil {
+		features.SMM = enabled()
+	}
+	if vm.Annotations == nil {
+		vm.Annotations = map[string]string{}
+	}
+	if _, ok := vm.Annotations[reservedMemoryAnnotationKey]; !ok {
+		vm.Annotations[reservedMemoryAnnotationKey] = windowsReservedMemory
 	}
 }
