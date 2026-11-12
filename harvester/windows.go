@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	yaml "go.yaml.in/yaml/v3"
-	"k8s.io/apimachinery/pkg/util/validation"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 )
 
@@ -60,11 +59,7 @@ func windowsHostname(userData string) string {
 	if !ok {
 		return ""
 	}
-	hostname = strings.ToLower(hostname)
-	if len(validation.IsDNS1123Label(hostname)) > 0 {
-		return ""
-	}
-	return hostname
+	return validNodeName(hostname)
 }
 
 // ConfigureWindows applies the settings Harvester's built-in Windows VM
