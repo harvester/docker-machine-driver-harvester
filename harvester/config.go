@@ -73,6 +73,9 @@ type VGPURequest struct {
 }
 
 func (d *Driver) checkConfig() error {
+	if err := checkOS(d.OS); err != nil {
+		return err
+	}
 	if d.KeyPairName != "" && d.SSHPrivateKeyPath == "" {
 		return errors.New("must specify the ssh private key path of the harvester key pair")
 	}

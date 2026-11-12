@@ -20,6 +20,7 @@ const (
 	defaultReservedMemorySize = -1 // -1 means no input
 	defaultDiskBus            = "virtio"
 	defaultNetworkModel       = "virtio"
+	defaultOS                 = osLinux
 )
 
 func (d *Driver) GetCreateFlags() []mcnflag.Flag {
@@ -223,6 +224,15 @@ func (d *Driver) GetCreateFlags() []mcnflag.Flag {
 			Name:   "harvester-cpu-model",
 			Usage:  "model of CPU for machine",
 		},
+		// The flag name must end in "-os": rancher-machine detects the guest OS
+		// flag by that suffix and, for "windows", writes the Rancher install
+		// script as a Cloudbase-Init cloud-config (C:\install.ps1 + set_hostname).
+		mcnflag.StringFlag{
+			EnvVar: "HARVESTER_OS",
+			Name:   "harvester-os",
+			Usage:  "guest operating system of the machine image: linux or windows",
+			Value:  defaultOS,
+		},
 	}
 }
 
@@ -339,6 +349,8 @@ func (d *Driver) SetConfigFromFlags(flags drivers.DriverOptions) error {
 	d.BlockMultiQueue = flags.Bool("harvester-block-multi-queue")
 	d.IOThreadsPolicy = flags.String("harvester-io-threads-policy")
 	d.IOThreadCount = flags.Int("harvester-io-thread-count")
+
+	d.OS = flags.String("harvester-os")
 	return d.checkConfig()
 }
 
