@@ -3,7 +3,7 @@ module github.com/harvester/docker-machine-driver-harvester
 go 1.26.0
 
 replace (
-	github.com/cilium/ebpf => github.com/cilium/ebpf v0.7.0
+	github.com/cilium/ebpf => github.com/cilium/ebpf v0.22.0
 	github.com/cyphar/filepath-securejoin => github.com/cyphar/filepath-securejoin v0.3.6
 	github.com/google/gnostic-models => github.com/google/gnostic-models v0.7.1
 	github.com/harvester/harvester => github.com/harvester/harvester v0.0.0-20260909043031-0dbb2db47d2d
