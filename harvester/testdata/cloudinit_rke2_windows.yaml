@@ -1,0 +1,9 @@
+#cloud-config
+runcmd:
+- powershell C:\install.ps1
+set_hostname: wincl-pool-x7k2q
+write_files:
+- content: H4sIAAAAAAAA/0rOzytJzSvhAgQAAP//AQAAAA==
+  encoding: gzip+b64
+  path: C:\install.ps1
+  permissions: "0600"
