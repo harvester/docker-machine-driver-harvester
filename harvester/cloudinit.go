@@ -90,10 +90,16 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		networkData string
 	)
 	// userData
-	if d.SSHPassword != "" {
+	if d.isWindows() {
+		// Cloudbase-Init ignores cloud-init's password and SSH key stanzas;
+		// create the user through its "users" plugin instead.
+		if d.SSHPassword != "" && d.SSHUser != "" {
+			userData += fmt.Sprintf(userDataWindowsUserTemplate, d.SSHUser, d.SSHPassword)
+		}
+	} else if d.SSHPassword != "" {
 		userData += fmt.Sprintf(userDataPasswordTemplate, d.SSHUser, d.SSHPassword)
 	}
-	if d.SSHPublicKey != "" {
+	if d.SSHPublicKey != "" && !d.isWindows() {
 		if d.AddUserToDockerGroup {
 			userData += fmt.Sprintf(userDataAddDockerGroupSSHKeyTemplate, d.SSHUser, d.SSHPublicKey)
 		} else {
@@ -119,7 +125,9 @@ func (d *Driver) mergeCloudInit() (string, string, error) {
 		userData = string(userDataByte)
 	}
 	userData = userDataHeader + userData
-	if strings.HasPrefix(d.UserData, userDataHeaderTemplateJinja) {
+	// Cloudbase-Init only treats user data as cloud-config when the first line
+	// is "#cloud-config", so never prepend the jinja header for Windows.
+	if strings.HasPrefix(d.UserData, userDataHeaderTemplateJinja) && !d.isWindows() {
 		userData = userDataHeaderTemplateJinja + userData
 	}
 	// networkData
